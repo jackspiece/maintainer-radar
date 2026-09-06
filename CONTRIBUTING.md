@@ -30,6 +30,19 @@ make lint       # requires: python -m pip install "ruff==0.16.0"
 make typecheck  # requires: python -m pip install "mypy==2.3.0"
 ```
 
+For changes to the demo, also run:
+
+```bash
+node tests/demo_smoke.js
+# Optional dependency for the real-browser regression checks:
+python -m pip install playwright
+python -m playwright install firefox
+python tests/browser_smoke.py
+```
+
+The browser checks use mocked GitHub responses and an ephemeral browser profile.
+They cover the sample, budgets, exports, small screens, partial scans, and errors.
+
 ## Good Contributions
 
 - new scoring fixtures from real maintainer workflows
@@ -53,11 +66,26 @@ wrong.
 
 ## Release Process
 
-1. Bump `__version__` in `src/maintainer_radar/__init__.py` (the package
-   version is single-sourced from there).
-2. Add a `CHANGELOG.md` entry and update the pinned action tag in `README.md`
-   and `examples/github-actions/`.
-3. Merge to `main`, then create a `vX.Y.Z` tag and a GitHub release.
-4. Publishing the release triggers the `Release` workflow, which builds the
-   package and publishes it to PyPI via trusted publishing (the `pypi`
-   environment must be configured with a PyPI trusted publisher).
+A commit does not need a new version. Keep related work together under the
+existing **Unreleased** changelog section until it is ready for users.
+
+- Copy changes, demo styling, documentation, and internal refactors can land
+  without a package release. GitHub Pages can update separately.
+- Batch fixes into a patch release. Use a minor release for a coherent set of
+  new capabilities or intentional behavior changes while the project is 0.x.
+- Choose the version when preparing the release, not during each small edit.
+  Describe the user-visible change and how it was verified.
+- Keep installation examples pinned to the latest published tag until the new
+  release is actually available. Never move an existing version tag.
+
+When the batch is ready:
+
+1. Check the unit tests, browser smoke checks, lint, types, and sample commands.
+2. Set `__version__` in `src/maintainer_radar/__init__.py`, which is the package
+   version source, and finalize that release's changelog entry.
+3. Merge to `main`, create the matching `vX.Y.Z` tag, and publish its release.
+4. Update installation examples and `DEFAULT_ACTION_REF` in
+   `src/maintainer_radar/workflow.py` to that published tag.
+
+Publishing a release triggers the existing PyPI workflow. Trusted publishing
+must be configured for the `pypi` environment before using it.

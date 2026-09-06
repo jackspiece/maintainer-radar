@@ -2,6 +2,23 @@
 
 ## Unreleased (0.21.0)
 
+- Fixed generated workflows to use a published Action tag and check out the
+  repository when a config file is requested. Missing explicit configs and
+  non-integer thresholds now fail clearly.
+- Count external CI commit statuses alongside check runs; incomplete checks
+  no longer disappear from scoring. Added shared Python/browser regressions.
+- Reject malformed JSON list entries without a traceback, remove numeric
+  grades from author-facing draft replies, and make type checking required.
+- Simplified the browser demo to one PR queue and a copyable review plan, with
+  an interactive offline example, expandable evidence, and a responsive layout.
+  Removed duplicate summary panels, badge/workflow generators, and extra export
+  controls from the demo; full reporting remains in the CLI and GitHub Action.
+- Fixed sample controls, selected-budget planning, stale results after scan
+  failures, clipboard fallback, and incomplete PR/CI fetch handling.
+- Aligned browser test-plan evidence and file categories with the Python defaults.
+- Clarified the demo's limits and documented batching changes into releases
+  instead of incrementing the version for every small edit.
+
 - Fixed `--stale-days` filtering to honor `--now`, so reproducible runs filter
   and score with the same clock.
 - Tightened test-plan detection: evidence must be an explicit section, label,

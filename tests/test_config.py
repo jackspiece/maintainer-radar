@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from maintainer_radar.config import (
     DEFAULT_CONFIG,
@@ -14,8 +15,22 @@ from maintainer_radar.config import (
 
 
 class ConfigTests(unittest.TestCase):
-    def test_missing_config_returns_defaults(self) -> None:
-        self.assertEqual(load_config("/no/such/file.json"), DEFAULT_CONFIG)
+    def test_missing_implicit_config_returns_defaults(self) -> None:
+        with patch.object(Path, "exists", return_value=False):
+            self.assertEqual(load_config(), DEFAULT_CONFIG)
+
+    def test_missing_explicit_config_fails(self) -> None:
+        with self.assertRaises(FileNotFoundError):
+            load_config("/no/such/file.json")
+
+    def test_non_integer_thresholds_fail(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "config.json"
+            for value in (True, False, 3.7, -1):
+                with self.subTest(value=value):
+                    path.write_text(json.dumps({"quiet_days": value}), encoding="utf-8")
+                    with self.assertRaises(ValueError):
+                        load_config(str(path))
 
     def test_load_config_merges_known_keys(self) -> None:
         config = load_config("tests/fixtures/maintainer-radar-config.json")

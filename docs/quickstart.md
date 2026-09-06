@@ -17,7 +17,7 @@ GitHub token, does not post comments, and does not install anything.
 
 ## First GitHub Action Run
 
-For a real maintainer queue report, generate the config and workflow:
+If you have [installed the CLI](#first-cli-run), generate the config and workflow:
 
 ```bash
 maintainer-radar init-repo --profile balanced
@@ -27,7 +27,9 @@ This writes `.maintainer-radar.json` and
 `.github/workflows/maintainer-radar.yml`. It refuses to overwrite existing files
 unless you pass `--force`.
 
-Or add this workflow manually and run it from the Actions tab:
+To start without installing anything locally, save this as
+`.github/workflows/maintainer-radar.yml`, commit it to your default branch,
+and run it from the Actions tab:
 
 {% raw %}
 ```yaml

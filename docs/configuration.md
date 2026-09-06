@@ -3,7 +3,9 @@
 Maintainer Radar can read project-specific thresholds from
 `.maintainer-radar.json` in the current directory.
 
-Use `--config path/to/config.json` to load a different file.
+Use `--config path/to/config.json` to load a different file. An explicitly
+named file must exist; a missing file fails instead of silently using defaults.
+Numeric thresholds must be non-negative integers.
 
 Generate a starter config instead of writing JSON by hand:
 
@@ -72,13 +74,22 @@ maintainer-radar from-json queue.json --config strict-config.json
 ```
 
 For scheduled GitHub Action reports, pass the same file path with the `config`
-input:
+input. Check out the repository before running the Action so the file exists
+on the runner. Generated workflows include this step when `--config` is set:
 
 {% raw %}
 ```yaml
-with:
-  repository: ${{ github.repository }}
-  config: .maintainer-radar.json
+steps:
+  - uses: actions/checkout@v7
+  - uses: actions/setup-python@v7
+    with:
+      python-version: "3.12"
+  - uses: JackSpiece/maintainer-radar@v0.20.0
+    env:
+      GH_TOKEN: ${{ github.token }}
+    with:
+      repository: ${{ github.repository }}
+      config: .maintainer-radar.json
 ```
 {% endraw %}
 

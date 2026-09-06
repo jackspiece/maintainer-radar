@@ -18,8 +18,6 @@ jobs:
       - name: Ruff lint
         run: ruff check src tests
       - name: Mypy type check
-        # Advisory while the typing baseline is established.
-        continue-on-error: true
         run: mypy src
 
   test:

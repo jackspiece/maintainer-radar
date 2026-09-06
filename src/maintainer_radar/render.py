@@ -709,7 +709,7 @@ def render_summary_markdown(
         f"- PRs scanned: {summary['total']}",
         f"- Review now: {summary['review_now']}",
         f"- Needs author follow-up: {summary['author_follow_up']}",
-        f"- CI blocked or pending: {summary['ci_blocked'] + summary['ci_pending']}",
+        f"- CI blocked or pending: {int(summary['ci_blocked']) + int(summary['ci_pending'])}",
         f"- Merge conflicts: {summary['merge_conflicts']}",
         f"- Branch behind base: {summary['branch_behind']}",
         f"- Merge gated: {summary['merge_gated']}",
@@ -1032,7 +1032,7 @@ def summarize_review_plan(analyses: list[dict[str, Any]], budget_minutes: int) -
     }
 
 
-def _render_plan_html_summary(plan: dict[str, Any], summary: dict[str, int]) -> str:
+def _render_plan_html_summary(plan: dict[str, Any], summary: dict[str, int | str]) -> str:
     metrics = [
         ("Time budget", f"{plan['budget_minutes']} minutes"),
         ("Planned PRs", len(plan["planned"])),
@@ -1240,7 +1240,7 @@ def _render_html_summary(analyses: list[dict[str, Any]]) -> str:
         ("Watch only", summary["watch_only"]),
         ("Review now", summary["review_now"]),
         ("Author follow-up", summary["author_follow_up"]),
-        ("CI blocked", summary["ci_blocked"] + summary["ci_pending"]),
+        ("CI blocked", int(summary["ci_blocked"]) + int(summary["ci_pending"])),
         ("Merge conflicts", summary["merge_conflicts"]),
         ("Branch behind", summary["branch_behind"]),
         ("Merge gated", summary["merge_gated"]),
@@ -1480,9 +1480,7 @@ def render_detail(item: dict[str, Any]) -> str:
 
 
 def render_comment_template(item: dict[str, Any]) -> str:
-    action = str(item.get("action") or "needs triage")
     flags = [str(flag) for flag in item.get("flags") or []]
-    reviewability = item.get("reviewability")
 
     requests: list[str] = []
     if any("CI failing" in flag for flag in flags):
@@ -1509,11 +1507,9 @@ def render_comment_template(item: dict[str, Any]) -> str:
     lines = [
         "Thanks for the PR.",
         "",
-        f"Current triage suggests: **{action}**.",
+        "Before the next review, could you please:",
     ]
-    if reviewability is not None:
-        lines.append(f"Reviewability score: **{reviewability}/100**.")
-    lines.extend(["", "Before the next maintainer pass, please:"])
+    lines.append("")
     lines.extend(f"- {request}" for request in requests)
     lines.extend(
         [

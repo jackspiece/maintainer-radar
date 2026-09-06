@@ -390,7 +390,8 @@ class RenderTests(unittest.TestCase):
         self.assertIn("### Draft Follow-ups", output)
         self.assertIn("#### [#2 Fix CI](https://example.test/pull/2)", output)
         self.assertIn("```markdown", output)
-        self.assertIn("Current triage suggests: **ask for CI fix**.", output)
+        self.assertIn("Before the next review, could you please:", output)
+        self.assertNotIn("Reviewability score", output)
         self.assertIn("Get CI passing", output)
         self.assertIn("Add a short validation", output)
         self.assertIn("Please edit before posting", output)
@@ -798,7 +799,7 @@ class RenderTests(unittest.TestCase):
             }
         )
 
-        self.assertIn("Current triage suggests", output)
+        self.assertIn("Before the next review", output)
         self.assertIn("Get CI passing", output)
         self.assertIn("Add a short validation", output)
         self.assertIn("Generated as a draft", output)

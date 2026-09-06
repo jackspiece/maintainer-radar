@@ -47,7 +47,7 @@ CONFIG_PROFILES: dict[str, dict[str, Any]] = {
 def load_config(path: str | None = None) -> dict[str, Any]:
     config = _copy_config(DEFAULT_CONFIG)
     config_path = Path(path) if path else Path(".maintainer-radar.json")
-    if not config_path.exists():
+    if not path and not config_path.exists():
         return config
 
     with config_path.open("r", encoding="utf-8") as fh:
@@ -83,6 +83,8 @@ def _copy_config(config: dict[str, Any]) -> dict[str, Any]:
 
 
 def _non_negative_int(value: Any, key: str) -> int:
+    if isinstance(value, (bool, float)):
+        raise ValueError(f"Config key {key} must be an integer")
     try:
         parsed = int(value)
     except (TypeError, ValueError) as exc:
