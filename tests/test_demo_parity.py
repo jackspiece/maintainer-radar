@@ -36,6 +36,10 @@ class DemoParityTests(unittest.TestCase):
             {"files": [{"path": "docs/guide.py"}], "changedFiles": 1},
             {"files": [{"path": "generated/test_parser.py"}], "changedFiles": 1},
             {"files": [{"path": "src/parser.py"}], "changedFiles": 1},
+            {"files": [{"path": "src/parser.py"}], "changedFiles": 2},
+            {"files": [{"path": "docs/guide.md"}], "changedFiles": 2},
+            *({"files": [{"path": "README.md"}, {"path": path}]} for path in
+              ("package-lock.json", "Dockerfile", "tests/test_parser.py")),
             {"draft": True},
             {"labels": [{"name": "waiting-on-author"}]},
             {"mergeable": "CONFLICTING"},

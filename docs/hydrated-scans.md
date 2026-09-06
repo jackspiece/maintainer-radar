@@ -25,6 +25,11 @@ enables deeper signals from:
 - latest reviews
 - detailed comments
 
+Hydration can still return incomplete metadata. If the supplied file list is
+shorter than the PR's changed file count, the report flags `incomplete file
+list` and avoids claiming that tests are absent or that the change is docs-only.
+Check the full diff on GitHub before relying on either conclusion.
+
 ## Tradeoff
 
 Hydration makes one extra GitHub CLI request per PR after repo filters are

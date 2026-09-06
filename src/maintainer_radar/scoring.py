@@ -326,6 +326,7 @@ def analyze_pr(
     additions = int(pr.get("additions") or 0)
     deletions = int(pr.get("deletions") or 0)
     changed_files = int(pr.get("changedFiles") or files.total_files or 0)
+    files_complete = files.total_files >= changed_files
     total_diff = additions + deletions
     review_decision = str(pr.get("reviewDecision") or "").upper()
     merge_state_status = _merge_state_status(pr)
@@ -441,7 +442,10 @@ def analyze_pr(
     elif has_test_plan:
         signals.append("test plan present")
 
-    if files.code_files and not files.test_files:
+    if "files" in pr and not files_complete:
+        flags.append("incomplete file list")
+
+    if files_complete and files.code_files and not files.test_files:
         risk += 10
         flags.append("code changed without tests")
         _record_score(score_breakdown, "code changed without tests", 10, kind="flag")
@@ -454,7 +458,7 @@ def analyze_pr(
         flags.append("generated or lockfile changes")
         _record_score(score_breakdown, "generated or lockfile changes", generated_risk, kind="flag")
 
-    if not files.code_files and files.doc_files:
+    if files_complete and files.doc_files and files.doc_files == files.total_files:
         risk -= 6
         signals.append("docs-only shape")
         _record_score(score_breakdown, "docs-only shape", -6, kind="signal")

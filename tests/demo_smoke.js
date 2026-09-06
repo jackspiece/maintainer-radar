@@ -35,8 +35,9 @@ assert.ok(ready.signals.includes("tests changed"));
 assert.equal(ready.checksKnown, true);
 const risky = analyze({ number: 43, additions: 2200, deletions: 120, changed_files: 40, body: "Implementation update.", updated_at: "2026-05-10T00:00:00Z" }, { checkRuns: [{ status: "COMPLETED", conclusion: "FAILURE" }] }, [{ filename: "src/plugin/runtime.ts" }]);
 assert.equal(risky.action, "ask for CI fix");
-assert.equal(risky.reviewability, 7);
-for (const flag of ["very large diff", "CI failing", "stale 22 days", "no test plan found", "code changed without tests"]) assert.ok(risky.flags.includes(flag), flag);
+assert.equal(risky.reviewability, 17);
+for (const flag of ["very large diff", "CI failing", "stale 22 days", "no test plan found", "incomplete file list"]) assert.ok(risky.flags.includes(flag), flag);
+assert.ok(!risky.flags.includes("code changed without tests"));
 assert.ok(risky.scoreBreakdown.some((entry) => entry.label === "very large diff" && entry.riskDelta === 30));
 assert.equal(analyze({ labels: [{ name: "waiting-on-author" }] }).action, "needs author follow-up");
 assert.equal(analyze({ labels: ["blocked-upstream"] }).action, "needs author follow-up");
@@ -61,6 +62,13 @@ assert.deepEqual(demo.summarizeFiles([{ filename: "tests/test_a.py" }, { filenam
 assert.ok(!analyze({ body: "" }, {}, [{ filename: "tests/test_parser.py" }]).flags.includes("no test plan found"));
 const shallow = { ...base }; delete shallow.body;
 assert.ok(!demo.analyzePullRequest(shallow, files, { now }).flags.includes("no test plan found"));
+for (const filename of ["package-lock.json", "Dockerfile", "tests/test_parser.py"]) {
+  const mixed = analyze({}, {}, [{ filename: "README.md" }, { filename }]);
+  assert.ok(!mixed.signals.includes("docs-only shape"), filename);
+  assert.equal(demo.estimateReviewMinutes(mixed), 12, filename);
+}
+const docsOnly = analyze({ changed_files: 1 }, {}, [{ filename: "README.md" }]);
+assert.equal(demo.estimateReviewMinutes(docsOnly), 6);
 
 const plan = demo.buildReviewPlan([ready, risky, pending], 15);
 assert.deepEqual(plan.planned.map((entry) => entry.item.number), [42]);

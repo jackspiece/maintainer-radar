@@ -125,6 +125,34 @@ class AnalyzePrTests(unittest.TestCase):
             "Review now as a likely low-risk docs-only change.",
         )
 
+    def test_partial_file_lists_do_not_claim_missing_tests_or_docs_only(self) -> None:
+        for path in ("src/parser.py", "docs/guide.md"):
+            with self.subTest(path=path):
+                result = analyze_pr({
+                    "changedFiles": 2, "files": [{"path": path}],
+                    "body": "Test plan: pytest", "updatedAt": NOW.isoformat(),
+                }, now=NOW)
+                self.assertIn("incomplete file list", result["flags"])
+                self.assertNotIn("code changed without tests", result["flags"])
+                self.assertNotIn("docs-only shape", result["signals"])
+
+    def test_mixed_documentation_changes_are_not_docs_only(self) -> None:
+        for path in ("package-lock.json", "Dockerfile", "tests/test_parser.py"):
+            with self.subTest(path=path):
+                result = analyze_pr({
+                    "changedFiles": 2,
+                    "files": [{"path": "README.md"}, {"path": path}],
+                }, now=NOW)
+                self.assertNotIn("docs-only shape", result["signals"])
+                self.assertNotIn("docs-only", result["next_step"])
+
+    def test_complete_code_file_list_still_reports_missing_tests(self) -> None:
+        result = analyze_pr({
+            "changedFiles": 1, "files": [{"path": "src/parser.py"}],
+        }, now=NOW)
+        self.assertIn("code changed without tests", result["flags"])
+        self.assertNotIn("incomplete file list", result["flags"])
+
     def test_blocker_fixture_corpus_detects_maintainer_blockers(self) -> None:
         fixture_path = Path(__file__).parent / "fixtures" / "blocker-prs.json"
         prs = json.loads(fixture_path.read_text(encoding="utf-8"))
