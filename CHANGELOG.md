@@ -2,6 +2,9 @@
 
 ## Unreleased (0.21.0)
 
+- Avoid missing-test and docs-only conclusions from incomplete file lists.
+  Mixed documentation changes no longer receive the docs-only score adjustment
+  or shorter review estimate. Keep the Python and browser rules aligned.
 - Fixed generated workflows to use a published Action tag and check out the
   repository when a config file is requested. Missing explicit configs and
   non-integer thresholds now fail clearly.

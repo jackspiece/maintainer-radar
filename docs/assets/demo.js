@@ -260,6 +260,7 @@
     const additions = Number(pr.additions || 0);
     const deletions = Number(pr.deletions || 0);
     const changedFiles = Number(pr.changed_files || fileSummary.totalFiles || 0);
+    const filesComplete = fileSummary.totalFiles >= changedFiles;
     const totalDiff = additions + deletions;
     const staleDays = daysSince(pr.updated_at, options.now);
     const hasBody = Object.prototype.hasOwnProperty.call(pr, "body");
@@ -364,7 +365,11 @@
       signals.push(reviewRequests === 1 ? "review requested" : `${reviewRequests} reviews requested`);
     }
 
-    if (fileSummary.codeFiles && !fileSummary.testFiles) {
+    if (Array.isArray(files) && !filesComplete) {
+      flags.push("incomplete file list");
+    }
+
+    if (filesComplete && fileSummary.codeFiles && !fileSummary.testFiles) {
       risk += 10;
       flags.push("code changed without tests");
       addImpact(scoreBreakdown, "code changed without tests", 10, "flag");
@@ -379,7 +384,7 @@
       addImpact(scoreBreakdown, "generated or lockfile changes", generatedRisk, "flag");
     }
 
-    if (!fileSummary.codeFiles && fileSummary.docFiles) {
+    if (filesComplete && fileSummary.docFiles && fileSummary.docFiles === fileSummary.totalFiles) {
       risk -= 6;
       signals.push("docs-only shape");
       addImpact(scoreBreakdown, "docs-only shape", -6, "signal");

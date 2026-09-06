@@ -48,6 +48,17 @@ Example:
 - code changed without tests
 - generated or lockfile changes
 
+## File evidence
+
+`docs-only shape` requires a complete file list with every file classified as
+documentation. A README alongside a lockfile, test, or unclassified file does
+not receive the docs-only score adjustment or shorter review estimate.
+
+When the supplied file list contains fewer entries than the reported changed
+file count, Radar shows `incomplete file list`. It still uses visible evidence,
+such as a test file that was returned, but does not infer that tests are absent.
+The incomplete-list warning itself does not add risk points.
+
 ## Maintainer Blocker Language
 
 Blocker detection intentionally looks for plain maintainer feedback patterns:
