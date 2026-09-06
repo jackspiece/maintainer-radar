@@ -149,16 +149,17 @@ def summarize_checks(items: list[dict[str, Any]] | None) -> CheckSummary:
     passed = failed = pending = skipped = 0
     for item in items or []:
         status = str(item.get("status") or "").upper()
-        conclusion = str(item.get("conclusion") or "").upper()
+        # gh rollups contain both CheckRun and legacy StatusContext objects.
+        conclusion = str(item.get("conclusion") or item.get("state") or "").upper()
         if status and status != "COMPLETED":
             pending += 1
         elif conclusion in {"SUCCESS", "NEUTRAL"}:
             passed += 1
         elif conclusion == "SKIPPED":
             skipped += 1
-        elif conclusion in {"FAILURE", "TIMED_OUT", "CANCELLED", "ACTION_REQUIRED"}:
+        elif conclusion in {"FAILURE", "ERROR", "TIMED_OUT", "CANCELLED", "ACTION_REQUIRED"}:
             failed += 1
-        elif conclusion:
+        else:
             pending += 1
     return CheckSummary(
         passed=passed,

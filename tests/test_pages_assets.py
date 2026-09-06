@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from collections import Counter
+from html.parser import HTMLParser
 from pathlib import Path
 import struct
 import unittest
@@ -9,68 +11,37 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 class PagesAssetTests(unittest.TestCase):
-    def test_pages_demo_has_share_metadata_and_interactive_script(self) -> None:
+    def test_demo_assets_and_interactive_controls_are_wired(self) -> None:
         html = (ROOT / "docs" / "index.html").read_text(encoding="utf-8")
+        ids: list[str] = []
+        labels: list[str] = []
+        assets: list[str] = []
 
-        self.assertIn("Try a public repo", html)
-        self.assertIn("maintainer-radar init-repo --profile balanced", html)
-        self.assertIn("maintainer-radar recommend https://github.com/owner/repo/pulls", html)
-        self.assertIn("GitHub Action", html)
-        self.assertIn('href="quickstart.html"', html)
-        self.assertIn('href="adoption.html"', html)
-        self.assertIn('href="github-action.html"', html)
-        self.assertIn('href="attention-workflows.html"', html)
-        self.assertIn('href="privacy-permissions.html"', html)
-        self.assertIn('href="review-plan.html"', html)
-        self.assertIn("run summary", html)
-        self.assertIn("no hosted service or model token", html)
-        self.assertIn("time-boxed review", html)
-        self.assertIn("Next 60 minutes", html)
-        self.assertIn("Next step", html)
-        self.assertIn("Maintainer blocked", html)
-        self.assertIn("mergeable, review requested", html)
-        self.assertIn("merge conflicts", html)
-        self.assertIn("Resolve merge conflicts", html)
-        self.assertIn("Review now while the PR appears small, active, and low risk.", html)
-        self.assertIn('id="repo-form"', html)
-        self.assertIn('id="copy-link"', html)
-        self.assertIn('id="copy-badge"', html)
-        self.assertIn('id="copy-cli"', html)
-        self.assertIn('id="copy-markdown"', html)
-        self.assertIn('id="copy-plan"', html)
-        self.assertIn('id="copy-plan-json"', html)
-        self.assertIn('id="copy-workflow"', html)
-        self.assertIn('id="plan-minutes"', html)
-        self.assertIn('id="plan-title"', html)
-        self.assertIn('id="plan-meta"', html)
-        self.assertIn('id="plan-body"', html)
-        self.assertIn('id="draft-meta"', html)
-        self.assertIn('id="draft-followup-body"', html)
-        self.assertIn('data-copy-target="demo-draft-follow-up-1"', html)
-        self.assertIn("Copy Draft", html)
-        self.assertIn("Copy Plan", html)
-        self.assertIn("30 minute review plan", html)
-        self.assertIn('id="metric-session"', html)
-        self.assertIn('id="metric-quick"', html)
-        self.assertIn('id="metric-blocked"', html)
-        self.assertIn('id="attention-card"', html)
-        self.assertIn('id="attention-level"', html)
-        self.assertIn('id="attention-headline"', html)
-        self.assertIn('id="attention-reason"', html)
-        self.assertIn('id="workflow-mode"', html)
-        self.assertIn('id="workflow-recommendation"', html)
-        self.assertIn('id="next-session-brief"', html)
-        self.assertIn("Workflow: blocker-sweep", html)
-        self.assertIn("Clear maintainer blockers", html)
-        self.assertIn("Queue attention", html)
-        self.assertIn('id="group-action"', html)
-        self.assertIn("Group by action", html)
-        self.assertIn('href="browser-preview.html"', html)
-        self.assertIn("https://github.com/JackSpiece/maintainer-radar/issues/new/choose", html)
-        self.assertIn('<script src="assets/demo.js"></script>', html)
-        self.assertIn("recommend the next maintainer session", html)
+        class Elements(HTMLParser):
+            def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+                values = dict(attrs)
+                if values.get("id"):
+                    ids.append(values["id"] or "")
+                if tag == "label" and values.get("for"):
+                    labels.append(values["for"] or "")
+                if tag in {"script", "img", "link"}:
+                    src = values.get("src") or values.get("href") or ""
+                    if src.startswith("assets/"):
+                        assets.append(src)
+
+        Elements().feed(html)
+        self.assertEqual([key for key, count in Counter(ids).items() if count > 1], [])
+        self.assertTrue(set(labels).issubset(ids), "Every label must target an existing input")
+        for asset in assets:
+            self.assertTrue((ROOT / "docs" / asset).is_file(), asset)
+        for control in ("repo-form", "repo-input", "repo-submit", "load-sample", "scan-cancel",
+                        "scan-error", "scan-warning", "results", "queue-body", "plan-minutes",
+                        "plan-body", "copy-plan", "export-dialog", "export-text"):
+            self.assertIn(control, ids)
+        self.assertIn('role="status"', html)
+        self.assertIn('role="alert"', html)
+        self.assertIn("<noscript>", html)
         self.assertIn('property="og:image"', html)
-        self.assertIn("https://jackspiece.github.io/maintainer-radar/assets/social-preview.png", html)
         self.assertIn('name="twitter:card" content="summary_large_image"', html)
 
     def test_quickstart_docs_show_first_run_path(self) -> None:
@@ -182,14 +153,14 @@ class PagesAssetTests(unittest.TestCase):
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         docs = (ROOT / "docs" / "positioning.md").read_text(encoding="utf-8")
 
-        self.assertIn("Use AI reviewers to inspect code", readme)
+        self.assertIn("You still review the code and decide what to do.", readme)
         self.assertIn("time-boxed review plan", readme)
         self.assertIn("maintainer-radar recommend https://github.com/owner/repo/pulls", readme)
         self.assertIn("docs/attention-workflows.md", readme)
-        self.assertIn("Before-review workflow", readme)
+        self.assertIn("## Plan a review session", readme)
         self.assertIn("Where should a maintainer spend review attention first?", docs)
         self.assertIn("The `recommend` command turns a queue scan into one maintainer decision", docs)
-        self.assertIn("What It Refuses To Do", docs)
+        self.assertIn("## Boundaries", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
 
     def test_social_preview_png_has_expected_dimensions(self) -> None:
@@ -213,41 +184,12 @@ class PagesAssetTests(unittest.TestCase):
 
     def test_browser_preview_docs_explain_network_and_limits(self) -> None:
         docs = (ROOT / "docs" / "browser-preview.md").read_text(encoding="utf-8")
-
-        self.assertIn("public GitHub API", docs)
-        self.assertIn("does not ask for a GitHub token", docs)
-        self.assertIn("does not post comments", docs)
-        self.assertIn("rate-limit", docs)
-        self.assertIn("issues/new/choose", docs)
-        self.assertIn("?repo=python/cpython", docs)
-        self.assertIn("?repo=python/cpython&plan=30", docs)
-        self.assertIn("?repo=python/cpython&group=action&plan=30", docs)
-        self.assertIn("Copy Link", docs)
-        self.assertIn("Copy Badge", docs)
-        self.assertIn("Copy CLI", docs)
-        self.assertIn("--group-by action", docs)
-        self.assertIn("static Markdown badge", docs)
-        self.assertIn("Copy Markdown", docs)
-        self.assertIn("Copy Plan", docs)
-        self.assertIn("Copy JSON", docs)
-        self.assertIn("Copy Draft", docs)
-        self.assertIn("draft follow-up panel", docs)
-        self.assertIn("planned,\ndeferred, and watch-only PR arrays", docs)
-        self.assertIn("draft_follow_up_comment", docs)
-        self.assertIn("--review-plan-minutes 30", docs)
-        self.assertIn("copied demo links", docs)
-        self.assertIn("Copy Workflow", docs)
-        self.assertIn("current plan minutes", docs)
-        self.assertIn("maintainer blocked", docs)
-        self.assertIn("attention card", docs)
-        self.assertIn("blocked`, `follow-up`, `triage`, `review`, or `quiet", docs)
-        self.assertIn("workflow recommendation", docs)
-        self.assertIn("next-session line", docs)
-        self.assertIn("blocker-sweep", docs)
-        self.assertIn("review-sprint", docs)
-        self.assertIn("Group by action", docs)
-        self.assertIn("merge conflicts, branch-behind state, and repository merge gates", docs)
-        self.assertIn("requested reviewers and teams", docs)
+        for contract in ("public GitHub API", "does not ask for a GitHub token",
+                         "does not post comments", "rate-limit", "fictional",
+                         "5 most recently updated", "100 changed files", "30 seconds",
+                         "Copy Plan", "clipboard", "partial", "example queue",
+                         "?repo=python/cpython&plan=30", "--review-plan-minutes 30"):
+            self.assertIn(contract, docs)
 
     def test_github_action_docs_explain_contract_and_guardrails(self) -> None:
         docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")

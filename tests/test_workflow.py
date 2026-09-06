@@ -2,8 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from maintainer_radar import __version__
-from maintainer_radar.workflow import render_github_action_workflow
+from maintainer_radar.workflow import DEFAULT_ACTION_REF, render_github_action_workflow
 
 
 class WorkflowTests(unittest.TestCase):
@@ -16,7 +15,8 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("contents: read", output)
         self.assertIn("pull-requests: read", output)
         self.assertIn('GH_TOKEN: ${{ github.token }}', output)
-        self.assertIn(f"uses: JackSpiece/maintainer-radar@v{__version__}", output)
+        self.assertIn(f"uses: {DEFAULT_ACTION_REF}", output)
+        self.assertNotIn("actions/checkout", output)
         self.assertIn("uses: actions/upload-artifact@v7", output)
         self.assertIn("id: radar", output)
         self.assertIn("format: markdown", output)
@@ -57,6 +57,7 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn('max-risk: "20"', output)
         self.assertIn('top: "10"', output)
         self.assertIn('config: ".maintainer-radar.json"', output)
+        self.assertLess(output.index("actions/checkout@v7"), output.index("id: radar"))
         self.assertIn("format: html", output)
         self.assertIn("maintainer-radar.html", output)
         self.assertIn('step-summary: "true"', output)

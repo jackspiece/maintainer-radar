@@ -2,9 +2,6 @@ from __future__ import annotations
 
 from typing import Final
 
-from . import __version__
-
-
 REPORT_EXTENSIONS: Final[dict[str, str]] = {
     "markdown": "md",
     "html": "html",
@@ -24,6 +21,8 @@ WORKFLOW_ACTION_FILTERS: Final[set[str]] = {
     "wait-for-ci",
 }
 ACTION_REPOSITORY: Final[str] = "JackSpiece/maintainer-radar"
+# Update only after publishing a release; development versions may have no tag.
+DEFAULT_ACTION_REF: Final[str] = f"{ACTION_REPOSITORY}@v0.20.0"
 
 
 def render_github_action_workflow(
@@ -97,7 +96,8 @@ def render_github_action_workflow(
         if is_review_plan
         else f"Build {report_format} report"
     )
-    action = clean_action_ref or f"{ACTION_REPOSITORY}@v{__version__}"
+    action = clean_action_ref or DEFAULT_ACTION_REF
+    checkout = "      - uses: actions/checkout@v7\n" if clean_config else ""
     filter_inputs = "".join(
         [
             _yaml_input("label", clean_label),
@@ -130,7 +130,7 @@ jobs:
   report:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-python@v6
+{checkout}      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: {step_name}

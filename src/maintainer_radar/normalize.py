@@ -57,6 +57,8 @@ def normalize_items(data: Any, *, source: str) -> list[dict[str, Any]]:
 
 def _as_items(data: Any) -> list[dict[str, Any]]:
     if isinstance(data, list):
+        if any(not isinstance(item, dict) for item in data):
+            raise ValueError("Each pull request in the JSON list must be an object")
         return data
     if isinstance(data, dict):
         for key in (
@@ -68,7 +70,7 @@ def _as_items(data: Any) -> list[dict[str, Any]]:
             "pulls",
         ):
             if isinstance(data.get(key), list):
-                return data[key]
+                return _as_items(data[key])
         return [data]
     raise ValueError("JSON input must be an object, a list, or an object with items")
 

@@ -1,74 +1,34 @@
 # Positioning
 
-Maintainer Radar is not another AI code reviewer.
-
-The project sits before review. It answers a simpler question:
+Maintainer Radar helps a maintainer decide where to spend the next review
+session. It is useful when a queue has a mix of ready changes, failing checks,
+drafts, and unresolved follow-ups.
 
 > Where should a maintainer spend review attention first?
 
-Use AI reviewers to inspect code. Use Maintainer Radar before that to decide
-which pull requests are worth maintainer attention now.
+It reads available PR metadata and produces suggested next steps with visible
+reasons. A time-boxed review plan makes the amount of suggested work explicit.
+The maintainer still checks the code, discussion, and project context.
 
-## Existing Categories
+## The three entry points
 
-- AI code review bots comment on diffs.
-- GitHub Apps automate policy checks.
-- Bounty boards match contributors to paid tasks.
-- GitHub Actions automate repository workflows.
-- Generic dashboards show repository activity.
-
-## Comparison
-
-| Category | Main Job | Tradeoff | Maintainer Radar Difference |
-| --- | --- | --- | --- |
-| AI review bots | Comment on code changes | Can add review noise and needs model access | Routes queue attention before review |
-| GitHub Apps | Enforce policy in a repo | Needs installation and permissions | Runs locally with read-only `gh` access |
-| GitHub Actions | Run scheduled repository jobs | Usually needs custom scripts for triage | Ships a reusable read-only Action and workflow generator |
-| Generic dashboards | Show repository activity | Often broad and hosted | Produces paste-ready maintainer reports and artifacts |
-| Bounty boards | Match tasks to contributors | Optimized for contributor work | Optimized for maintainer review load |
-
-## Maintainer Radar's Angle
-
-Maintainer Radar generates a transparent triage brief from the CLI, a reusable
-GitHub Action, or a no-install browser preview:
-
-- review now
-- wait for CI
-- ask for CI fix
-- needs author follow-up
-- request smaller PR
-- needs triage
-
-Each PR includes a score breakdown and a next step, so the report explains both
-why a PR was routed and what a maintainer should do next.
-
-Every summary also includes a default 60-minute session digest: how many PRs fit
-now, how much active maintainer time that represents, how many are quick
-unblocks, and how many should stay on watch. That keeps the project focused on
-attention budgeting instead of generic repository activity.
-
-Review plans can also include editable draft follow-ups for PRs that need author
-action, CI fixes, smaller scope, or a ready-for-review update. Maintainer Radar
-still does not post anything; it gives maintainers copy they can edit during a
-handoff or review session.
+- **Browser demo:** try a fictional queue or preview five recent public PRs.
+  Choose a time budget, inspect the evidence, and copy one review plan.
+- **CLI:** use an authenticated `gh` session or offline JSON for a larger queue,
+  richer context, project configuration, and the full report formats.
+- **GitHub Action:** create a report in the repository's existing workflow.
 
 The `recommend` command turns a queue scan into one maintainer decision:
-attention level, workflow mode, reason, next-session brief, and the next command
-to run. That keeps the project from becoming another broad dashboard where the
-maintainer still has to infer the next move.
+where to start and which command to run next. The browser stays smaller than
+the CLI so someone can understand the result without learning every option.
 
-This is intentionally small. It makes the review queue easier to scan without a
-bot account, webhook, hosted database, or SaaS subscription.
-
-## What It Refuses To Do
+## Boundaries
 
 - It does not approve, reject, merge, label, or comment on pull requests.
-- It does not claim to understand code better than a maintainer.
-- It does not require a model key or hosted service to produce a queue brief.
+- It does not judge the contributor or claim that a score measures code quality.
+- It cannot know all the context or how long a review will take.
+- It does not need a model key, bot account, or hosted database.
 
-## Why Maintainers Might Care
-
-AI-assisted code contributions create a new review burden. Some PRs are useful.
-Some are large, under-tested, stale, or already known not to work.
-
-Maintainer Radar helps sort that queue without judging the author.
+Keep changes focused on clearer decisions, trustworthy signals, and useful
+reports. Extra dashboards, scoring summaries, or export buttons should earn
+their place by solving a distinct maintainer problem.

@@ -25,6 +25,21 @@ from maintainer_radar.cli import (
 
 
 class CliTests(unittest.TestCase):
+    def test_invalid_json_items_fail_without_traceback(self) -> None:
+        for payload in ('[null]', '{"items": [42]}'):
+            with self.subTest(payload=payload), patch("sys.stdin", StringIO(payload)), \
+                    patch("sys.stderr", new_callable=StringIO) as stderr:
+                self.assertEqual(main(["from-json", "-"]), 2)
+                self.assertIn("must be an object", stderr.getvalue())
+                self.assertNotIn("Traceback", stderr.getvalue())
+
+    def test_explicit_missing_config_fails_before_github_request(self) -> None:
+        with patch("maintainer_radar.cli.list_repo_prs") as fetch, \
+                patch("sys.stderr", new_callable=StringIO) as stderr:
+            self.assertEqual(main(["repo", "owner/repo", "--config", "/no/such/config.json"]), 2)
+            fetch.assert_not_called()
+            self.assertIn("config.json", stderr.getvalue())
+
     def test_format_works_before_subcommand(self) -> None:
         args = build_parser().parse_args(
             ["--format", "json", "from-json", "examples/sample-prs.json"]

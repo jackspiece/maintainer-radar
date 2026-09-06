@@ -12,6 +12,22 @@ NOW = datetime(2026, 6, 1, tzinfo=timezone.utc)
 
 
 class AnalyzePrTests(unittest.TestCase):
+    def test_legacy_status_contexts_and_incomplete_checks(self) -> None:
+        for state, action in (
+            ("SUCCESS", "review now"), ("FAILURE", "ask for CI fix"),
+            ("ERROR", "ask for CI fix"), ("PENDING", "wait for CI"),
+            ("EXPECTED", "wait for CI"),
+        ):
+            with self.subTest(state=state):
+                result = analyze_pr({"statusCheckRollup": [
+                    {"status": "COMPLETED", "conclusion": "SUCCESS"},
+                    {"__typename": "StatusContext", "state": state},
+                ]}, now=NOW)
+                self.assertEqual(result["action"], action)
+                self.assertEqual(result["checks"]["total"], 2)
+        result = analyze_pr({"statusCheckRollup": [{"status": "COMPLETED"}]}, now=NOW)
+        self.assertEqual(result["action"], "wait for CI")
+
     def test_review_now_for_small_green_pr_with_tests(self) -> None:
         result = analyze_pr(
             {
