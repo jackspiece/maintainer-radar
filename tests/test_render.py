@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import csv
+from io import StringIO
 import json
 import unittest
 
@@ -51,7 +53,7 @@ class RenderTests(unittest.TestCase):
         self.assertIn("review now", output)
         self.assertIn("Review now while the PR appears small, active, and low risk.", output)
         self.assertIn("90", output)
-        self.assertIn("CI passed (-8 risk)", output)
+        self.assertIn(r"CI passed \(-8 risk\)", output)
         self.assertIn("Average reviewability: 90/100\n\n| PR |", output)
 
     def test_markdown_can_group_queue_by_action(self) -> None:
@@ -366,7 +368,7 @@ class RenderTests(unittest.TestCase):
         self.assertIn("Workflow mode: review-sprint", output)
         self.assertIn("Workflow recommendation: Start a focused review block", output)
         self.assertIn("| Order | PR | Action | Est. | Next Step | Why |", output)
-        self.assertIn("[#1 Ready](https://example.test/pull/1)", output)
+        self.assertIn(r"[\#1 Ready](https://example.test/pull/1)", output)
         self.assertIn("12m", output)
         self.assertIn("### Watch Only", output)
         self.assertIn("#2 Wait", output)
@@ -388,7 +390,7 @@ class RenderTests(unittest.TestCase):
         )
 
         self.assertIn("### Draft Follow-ups", output)
-        self.assertIn("#### [#2 Fix CI](https://example.test/pull/2)", output)
+        self.assertIn(r"#### [\#2 Fix CI](https://example.test/pull/2)", output)
         self.assertIn("```markdown", output)
         self.assertIn("Before the next review, could you please:", output)
         self.assertNotIn("Reviewability score", output)
@@ -683,6 +685,24 @@ class RenderTests(unittest.TestCase):
 
         self.assertTrue(output.startswith("comment\n"))
         self.assertIn('"Thanks.\nPlease add tests."', output)
+
+    def test_csv_preserves_all_field_newlines_and_lf_record_terminators(self) -> None:
+        for value in ("left\rright", "left\nright", "left\r\nright", "ends\r", "ends\n",
+                      'comma, quote" and CR\rLF\n'):
+            with self.subTest(value=value):
+                comment = render_comment_csv(value)
+                self.assertEqual(list(csv.DictReader(StringIO(comment, newline=""))),
+                                 [{"comment": value}])
+                expected = 'comment\n"' + value.replace('"', '""') + '"\n'
+                self.assertEqual(comment, expected)
+                items = [{"number": 1, "title": value, "author": value, "next_step": value},
+                         {"number": 2, "title": "second row"}]
+                rows = list(csv.DictReader(StringIO(render_csv(items), newline="")))
+                self.assertEqual(len(rows), 2)
+                for field in ("title", "author", "next_step"):
+                    self.assertEqual(rows[0][field], value)
+                self.assertEqual(rows[1]["title"], "second row")
+                self.assertEqual(items[0]["title"], value)
 
     def test_html_output_contains_summary_and_escapes_content(self) -> None:
         output = render_html(

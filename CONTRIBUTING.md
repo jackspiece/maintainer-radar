@@ -21,13 +21,15 @@ PYTHONPATH=src python -m maintainer_radar from-json examples/sample-prs.json
 ## Tests, Lint, and Types
 
 CI runs the unit test suite on Python 3.10, 3.11, and 3.12, plus `ruff` for
-linting and `mypy` for advisory type checking. Run them locally before opening
+linting and `mypy` for required type checking. Run them locally before opening
 a PR:
 
 ```bash
 make test
 make lint       # requires: python -m pip install "ruff==0.16.0"
 make typecheck  # requires: python -m pip install "mypy==2.3.0"
+make check-release
+make check-examples
 ```
 
 For changes to the demo, also run:
@@ -39,6 +41,9 @@ python -m pip install playwright
 python -m playwright install firefox
 python tests/browser_smoke.py
 ```
+
+After changes to scoring or rendering, regenerate the committed offline examples
+with `python scripts/generate_examples.py`; the test suite detects stale output.
 
 The browser checks use mocked GitHub responses and an ephemeral browser profile.
 They cover the sample, budgets, exports, small screens, partial scans, and errors.
@@ -81,6 +86,7 @@ existing **Unreleased** changelog section until it is ready for users.
 When the batch is ready:
 
 1. Check the unit tests, browser smoke checks, lint, types, and sample commands.
+   See [the release checklist](docs/releasing.md) for build and wheel checks.
 2. Set `__version__` in `src/maintainer_radar/__init__.py`, which is the package
    version source, and finalize that release's changelog entry.
 3. Merge to `main`, create the matching `vX.Y.Z` tag, and publish its release.
@@ -89,3 +95,19 @@ When the batch is ready:
 
 Publishing a release triggers the existing PyPI workflow. Trusted publishing
 must be configured for the `pypi` environment before using it.
+
+## Markdown Parser Regression Checks
+
+The dependency-free suite checks Markdown escaping and source preservation. For
+additional rendered-output checks, install `markdown-it-py` in your development
+environment and make the `marked` Node package available. These are test-only
+tools; Maintainer Radar has no new runtime dependencies.
+
+```bash
+PYTHONPATH=src python -m unittest discover -s tests -p test_markdown_integrity.py -v
+```
+
+If Marked is installed outside the checkout, set `MARKED_MODULE` to its absolute
+ESM module path. The two parser checks skip with an explicit reason when their
+optional tools are missing. Both parsers exercise report tables, CLI review
+plans, browser-demo exports, literal titles, and exact link destinations.

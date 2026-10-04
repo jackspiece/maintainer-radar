@@ -96,6 +96,24 @@ assert.ok(demo.renderReviewPlanMarkdown([ready], "example/project", 1).includes(
 assert.ok(demo.renderReviewPlanMarkdown([{ ...ready, url: "javascript:alert(1)" }], "example/project", 30).includes("#42 Fix parser cache race"));
 assert.ok(!demo.renderReviewPlanMarkdown([{ ...ready, url: "javascript:alert(1)" }], "example/project", 30).includes("javascript:"));
 
+// Escaping happens only at the Markdown output boundary.
+const markdownFixtures = require("./fixtures/markdown-output.json");
+for (const title of markdownFixtures.titles) {
+  const item = { ...ready, title };
+  const before = JSON.stringify(item);
+  const markdown = demo.renderReviewPlanMarkdown([item], "example/project", 30);
+  assert.ok(!markdown.includes("\r"), title);
+  assert.equal(markdown.split("\n").filter((line) => /^1\. /.test(line)).length, 1, title);
+  assert.equal(JSON.stringify(item), before, title);
+}
+const hostile = { ...ready, title: "release](https://example.invalid/redirect)<!--" };
+const escapedHostile = String.raw`[\#42 release\]\(https://example.invalid/redirect\)&lt;\!--](${ready.url})`;
+assert.ok(demo.renderReviewPlanMarkdown([hostile], "example/project", 30).includes(escapedHostile));
+for (const { url, href } of markdownFixtures.destinations) {
+  const markdown = demo.renderReviewPlanMarkdown([{ ...ready, url }], "example/project", 30);
+  assert.ok(markdown.includes(`](${href.replaceAll("&", "&amp;")})`), url);
+}
+
 // Exercise network failure boundaries without making real API requests.
 async function networkChecks() {
   const originalFetch = global.fetch;

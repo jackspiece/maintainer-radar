@@ -12,6 +12,10 @@ time you have. You still review the code and decide what to do.
 with a working example queue, or scan five recent PRs from a public repository.
 No installation or sign-in is needed for the demo.
 
+Prefer a reproducible walkthrough? [Compare a 15-minute and 30-minute session](docs/worked-example.md)
+using a fictional two-PR queue, with the input, generated plans, and limits
+shown side by side.
+
 | What is in the queue | What Radar suggests |
 | --- | --- |
 | A small change with passing checks and tests | Start a review |
@@ -85,6 +89,9 @@ It reads pull request metadata through the GitHub CLI, the GitHub Action token, 
 - editable draft follow-ups that a maintainer can review before posting
 
 Reports are available as Markdown, JSON, CSV, and standalone HTML.
+The unreleased source adds local [search and action filters](docs/html-filters.md)
+to full, ungrouped HTML reports. Filtering changes visible rows without changing
+queue totals or scores, and makes no network requests.
 
 ## Plan a review session
 
@@ -132,11 +139,14 @@ See [GitHub Action usage](docs/github-action.md) and [attention workflows](docs/
 ## Documentation
 
 - [Two minute quickstart](docs/quickstart.md)
+- [Worked example with reproducible output](docs/worked-example.md)
 - [Adoption guide](docs/adoption.md)
 - [GitHub Action](docs/github-action.md)
 - [Review plans](docs/review-plan.md)
 - [Scoring heuristics](docs/heuristics.md)
 - [Configuration](docs/configuration.md)
+- [Offline snapshot comparison (unreleased source)](docs/snapshot-comparison.md)
+- [Local HTML report filters (unreleased source)](docs/html-filters.md)
 - [Privacy and permissions](docs/privacy-permissions.md)
 - [Project positioning](docs/positioning.md)
 - [GitLab JSON](docs/gitlab-json.md)

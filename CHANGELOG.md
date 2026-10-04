@@ -2,6 +2,26 @@
 
 ## Unreleased (0.21.0)
 
+- Add local search and action filters to full, ungrouped HTML reports, with
+  visible-row counts, keyboard-friendly reset, and a no-JavaScript fallback.
+  Filtering does not change queue totals, scores, or other report formats.
+
+- Preserve literal titles and table columns in Markdown reports and review
+  plans, including browser exports. Escape link labels and destinations so
+  title markup cannot redirect PR links; JSON and CSV remain source-faithful.
+
+- Add read-only offline snapshot comparison with deterministic JSON and Markdown
+  reports, explicit uncertainty warnings, and reproducible worked examples.
+- Refresh all offline example reports and add reproducible 15/30-minute review
+  plans with a worked walkthrough. Tests now reject stale generated examples.
+- Validate package version, release tag, and finalized changelog notes before
+  publishing, including canonical versions that build without normalization.
+  Source distributions now include test fixtures, scripts, and docs
+  so their bundled suite can run. CI and release builds test the source archive
+  and smoke-test the
+  installed wheel; release builds also rerun tests, lint, types, and demo checks.
+- Clean up intentionally held requests in browser smoke-test teardown.
+
 - Avoid missing-test and docs-only conclusions from incomplete file lists.
   Mixed documentation changes no longer receive the docs-only score adjustment
   or shorter review estimate. Keep the Python and browser rules aligned.
@@ -44,7 +64,7 @@
   comment objects.
 - Added `--action-ref` to `init-action` and `init-repo` for SHA-pinned
   workflows, and generated YAML now escapes backslashes in quoted values.
-- CI now runs `ruff` (enforced) and `mypy` (advisory), and the action smoke
+- CI now runs `ruff` and `mypy` as required checks, and the action smoke
   test writes `summary-json` through an environment variable instead of
   expanding an expression inside a heredoc.
 - Single-sourced the package version from `maintainer_radar.__version__`,

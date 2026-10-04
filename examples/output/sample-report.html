@@ -209,6 +209,48 @@
       color: var(--muted);
       font-size: 13px;
     }
+    .queue-filters {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 14px;
+    }
+    .queue-filters[hidden], .queue-report [hidden] {
+      display: none;
+    }
+    .queue-search { flex: 2 1 16rem; min-width: 0; }
+    .queue-action { flex: 1 1 13rem; min-width: 0; }
+    .queue-filters label { display: block; font-weight: 700; margin-bottom: 4px; }
+    .queue-filters input, .queue-filters select, .queue-filters button {
+      box-sizing: border-box;
+      max-width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--muted);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--text);
+      padding: 8px 10px;
+      font: inherit;
+      font-size: 16px;
+    }
+    .queue-filters input, .queue-filters select { width: 100%; }
+    .queue-filters button { cursor: pointer; font-weight: 700; }
+    .queue-report :focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+    .queue-help { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+    .queue-count { font-weight: 700; }
+    .queue-table-region { max-width: 100%; overflow-x: auto; border-radius: 8px; }
+    .queue-table-region table { min-width: 760px; table-layout: fixed; }
+    .queue-table-region th:nth-child(1) { width: 24%; }
+    .queue-table-region th:nth-child(2) { width: 18%; }
+    .queue-table-region th:nth-child(3) { width: 24%; }
+    .queue-table-region th:nth-child(4) { width: 7%; }
+    .queue-table-region th:nth-child(5), .queue-table-region th:nth-child(6) { width: 13%; }
+    .queue-table-region td { overflow-wrap: anywhere; }
+    .queue-table-region .action { white-space: normal; }
   </style>
 </head>
 <body>
@@ -233,8 +275,8 @@
 <div class="metric"><strong>0</strong><span>Large or triage</span></div>
 <div class="metric"><strong>1</strong><span>Stale 7+ days</span></div>
 <div class="metric"><strong>50/100</strong><span>Average score</span></div></section>
-    <table><thead><tr><th>PR</th><th>Action</th><th>Next step</th><th>Score</th><th>Risk impact</th><th>Signals</th></tr></thead><tbody><tr><td><a href="https://github.com/example/project/pull/42">#42 Fix parser cache race</a></td><td><span class="action action-review-now">review now</span></td><td>Review now while the PR appears small, active, and low risk.</td><td class="score">100</td><td class="impact">CI passed (-8 risk)</td><td class="signals">CI passed; review required; mergeable; review requested; test plan present; tests changed</td></tr>
-<tr><td><a href="https://github.com/example/project/pull/43">#43 Add universal plugin system</a></td><td><span class="action action-ask-for-ci-fix">ask for CI fix</span></td><td>Ask the author to get failing checks green before deeper review.</td><td class="score">0</td><td class="impact">very large diff (+30 risk); CI failing (+30 risk); changes requested (+25 risk); merge conflicts (+20 risk); stale 22 days (+15 risk); maintainer blocker language (+25 risk); no test plan found (+8 risk); code changed without tests (+10 risk)</td><td class="signals">very large diff; CI failing; changes requested; merge conflicts; stale 22 days; maintainer blocker language; no test plan found; code changed without tests</td></tr></tbody></table>
+    <section class="queue-report" aria-label="Pull request queue"><form id="queue-filters" class="queue-filters" hidden aria-label="Filter pull requests" aria-describedby="queue-help"><div class="queue-search"><label for="queue-search">Search queue</label><input id="queue-search" type="search" autocomplete="off" aria-controls="queue-results" aria-describedby="queue-help"></div><div class="queue-action"><label for="queue-action">Action</label><select id="queue-action" aria-controls="queue-results"><option value="">All actions</option><option value="review now">review now</option><option value="ask for CI fix">ask for CI fix</option></select></div><button id="queue-reset" type="button">Reset filters</button></form><p id="queue-help" class="queue-help">Search the displayed cells using case-insensitive literal text; accents matter. Filters work only in this file and combine with the action. Summary metrics above always describe the full report. On narrow screens, scroll the table horizontally.</p><p id="queue-count" class="queue-count" role="status" aria-live="polite" aria-atomic="true">Showing 2 of 2 PRs</p><p id="queue-filter-fallback" class="queue-help">All report rows are shown. Local filters require JavaScript.</p><p id="queue-filter-empty" class="empty" hidden>No pull requests match these filters. Clear the search or reset filters to show all rows.</p><div id="queue-results" class="queue-table-region" role="region" aria-label="Pull request queue table" tabindex="0"><table><thead><tr><th>PR</th><th>Action</th><th>Next step</th><th>Score</th><th>Risk impact</th><th>Signals</th></tr></thead><tbody><tr><td><a href="https://github.com/example/project/pull/42">#42 Fix parser cache race</a></td><td><span class="action action-review-now">review now</span></td><td>Review now while the PR appears small, active, and low risk.</td><td class="score">100</td><td class="impact">CI passed (-8 risk)</td><td class="signals">CI passed; review required; mergeable; review requested; test plan present; tests changed; incomplete file list</td></tr>
+<tr><td><a href="https://github.com/example/project/pull/43">#43 Add universal plugin system</a></td><td><span class="action action-ask-for-ci-fix">ask for CI fix</span></td><td>Ask the author to get failing checks green before deeper review.</td><td class="score">0</td><td class="impact">very large diff (+30 risk); CI failing (+30 risk); changes requested (+25 risk); merge conflicts (+20 risk); stale 22 days (+15 risk); maintainer blocker language (+25 risk); no test plan found (+8 risk)</td><td class="signals">very large diff; CI failing; changes requested; merge conflicts; stale 22 days; maintainer blocker language; no test plan found; incomplete file list</td></tr></tbody></table></div></section>
     <footer>Scores route maintainer attention. They do not replace review.</footer>
   </main>
   <script>
@@ -295,6 +337,52 @@
           setState(button, "Copy failed");
         }
       });
+    })();
+  </script>
+  <script>
+    (() => {
+      const form = document.getElementById("queue-filters");
+      const search = document.getElementById("queue-search");
+      const action = document.getElementById("queue-action");
+      const reset = document.getElementById("queue-reset");
+      const count = document.getElementById("queue-count");
+      const empty = document.getElementById("queue-filter-empty");
+      const region = document.getElementById("queue-results");
+      const fallback = document.getElementById("queue-filter-fallback");
+      if (!form || !search || !action || !reset || !count || !empty || !region || !fallback) {
+        return;
+      }
+      const normalize = (text) => text.normalize("NFC").toLowerCase();
+      const rows = Array.from(region.querySelectorAll("tbody tr"), (row) => ({
+        row,
+        text: normalize(Array.from(row.cells, (cell) => cell.textContent).join(" ")),
+        action: row.querySelector(".action").textContent
+      }));
+      function applyFilters() {
+        const query = normalize(search.value.trim());
+        const selectedAction = action.value;
+        let shown = 0;
+        for (const entry of rows) {
+          const matches = entry.text.includes(query) &&
+            (!selectedAction || entry.action === selectedAction);
+          entry.row.hidden = !matches;
+          if (matches) shown += 1;
+        }
+        count.textContent = `Showing ${shown} of ${rows.length} PRs`;
+        empty.hidden = shown !== 0 || rows.length === 0;
+      }
+      form.addEventListener("submit", (event) => event.preventDefault());
+      search.addEventListener("input", applyFilters);
+      action.addEventListener("change", applyFilters);
+      reset.addEventListener("click", () => {
+        search.value = "";
+        action.value = "";
+        applyFilters();
+        search.focus();
+      });
+      applyFilters();
+      fallback.hidden = true;
+      form.hidden = false;
     })();
   </script>
 </body>

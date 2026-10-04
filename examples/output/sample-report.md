@@ -27,7 +27,7 @@
 
 | PR | Action | Next Step | Score | Risk Impact | Signals |
 | --- | --- | --- | ---: | --- | --- |
-| [#42 Fix parser cache race](https://github.com/example/project/pull/42) | review now | Review now while the PR appears small, active, and low risk. | 100 | CI passed (-8 risk) | CI passed, review required, mergeable, review requested, test plan present, tests changed |
-| [#43 Add universal plugin system](https://github.com/example/project/pull/43) | ask for CI fix | Ask the author to get failing checks green before deeper review. | 0 | very large diff (+30 risk); CI failing (+30 risk); changes requested (+25 risk); merge conflicts (+20 risk); stale 22 days (+15 risk); maintainer blocker language (+25 risk); no test plan found (+8 risk); code changed without tests (+10 risk) | very large diff, CI failing, changes requested, merge conflicts, stale 22 days, maintainer blocker language, no test plan found, code changed without tests |
+| [\#42 Fix parser cache race](https://github.com/example/project/pull/42) | review now | Review now while the PR appears small, active, and low risk. | 100 | CI passed \(-8 risk\) | CI passed, review required, mergeable, review requested, test plan present, tests changed, incomplete file list |
+| [\#43 Add universal plugin system](https://github.com/example/project/pull/43) | ask for CI fix | Ask the author to get failing checks green before deeper review. | 0 | very large diff \(+30 risk\); CI failing \(+30 risk\); changes requested \(+25 risk\); merge conflicts \(+20 risk\); stale 22 days \(+15 risk\); maintainer blocker language \(+25 risk\); no test plan found \(+8 risk\) | very large diff, CI failing, changes requested, merge conflicts, stale 22 days, maintainer blocker language, no test plan found, incomplete file list |
 
 Scores are deterministic heuristics. They route maintainer attention, not merge authority.

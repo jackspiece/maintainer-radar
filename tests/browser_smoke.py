@@ -198,6 +198,14 @@ def run(executable: str | None, artifacts: Path) -> None:
             expect(page.locator("#source-badge")).to_have_text("Live GitHub data")
             expect(page.locator("#plan-title")).to_have_text("15 minute review plan")
             assert not errors, errors
+            # Finish deliberately held requests before shutting down Playwright.
+            # Cancelled scans may otherwise leave route tasks pending at teardown.
+            for route in held:
+                try:
+                    route.abort()
+                except Error:
+                    pass  # The browser may already have cancelled the request.
+            held.clear()
             browser.close()
     finally:
         server.shutdown()

@@ -1,0 +1,155 @@
+[
+  {
+    "number": 42,
+    "title": "Fix parser cache race",
+    "url": "https://github.com/example/project/pull/42",
+    "author": "contributor-a",
+    "labels": [],
+    "risk": 0,
+    "reviewability": 100,
+    "action": "review now",
+    "next_step": "Review now while the PR appears small, active, and low risk.",
+    "flags": [
+      "incomplete file list"
+    ],
+    "signals": [
+      "CI passed",
+      "review required",
+      "mergeable",
+      "review requested",
+      "test plan present",
+      "tests changed"
+    ],
+    "score_breakdown": [
+      {
+        "label": "CI passed",
+        "risk_delta": -8,
+        "kind": "signal"
+      }
+    ],
+    "raw_risk": -8,
+    "checks": {
+      "passed": 2,
+      "failed": 0,
+      "pending": 0,
+      "skipped": 0,
+      "total": 2
+    },
+    "files": {
+      "code_files": 1,
+      "doc_files": 0,
+      "test_files": 1,
+      "generated_files": 0,
+      "total_files": 2
+    },
+    "merge_state_status": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "review_requests": 1,
+    "stale_days": 0,
+    "additions": 42,
+    "deletions": 18,
+    "changed_files": 3
+  },
+  {
+    "number": 44,
+    "title": "Clarify cache configuration",
+    "url": "https://github.com/example/project/pull/44",
+    "author": "contributor-a",
+    "labels": [],
+    "risk": 0,
+    "reviewability": 100,
+    "action": "review now",
+    "next_step": "Review now while the PR appears small, active, and low risk.",
+    "flags": [
+      "incomplete file list"
+    ],
+    "signals": [
+      "CI passed",
+      "review required",
+      "mergeable",
+      "review requested",
+      "test plan present",
+      "tests changed"
+    ],
+    "score_breakdown": [
+      {
+        "label": "CI passed",
+        "risk_delta": -8,
+        "kind": "signal"
+      }
+    ],
+    "raw_risk": -8,
+    "checks": {
+      "passed": 2,
+      "failed": 0,
+      "pending": 0,
+      "skipped": 0,
+      "total": 2
+    },
+    "files": {
+      "code_files": 1,
+      "doc_files": 0,
+      "test_files": 1,
+      "generated_files": 0,
+      "total_files": 2
+    },
+    "merge_state_status": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "review_requests": 1,
+    "stale_days": 0,
+    "additions": 42,
+    "deletions": 18,
+    "changed_files": 3
+  },
+  {
+    "number": 45,
+    "title": "Test empty cache responses",
+    "url": "https://github.com/example/project/pull/45",
+    "author": "contributor-a",
+    "labels": [],
+    "risk": 0,
+    "reviewability": 100,
+    "action": "review now",
+    "next_step": "Review now while the PR appears small, active, and low risk.",
+    "flags": [
+      "incomplete file list"
+    ],
+    "signals": [
+      "CI passed",
+      "review required",
+      "mergeable",
+      "review requested",
+      "test plan present",
+      "tests changed"
+    ],
+    "score_breakdown": [
+      {
+        "label": "CI passed",
+        "risk_delta": -8,
+        "kind": "signal"
+      }
+    ],
+    "raw_risk": -8,
+    "checks": {
+      "passed": 2,
+      "failed": 0,
+      "pending": 0,
+      "skipped": 0,
+      "total": 2
+    },
+    "files": {
+      "code_files": 1,
+      "doc_files": 0,
+      "test_files": 1,
+      "generated_files": 0,
+      "total_files": 2
+    },
+    "merge_state_status": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "review_requests": 1,
+    "stale_days": 0,
+    "additions": 42,
+    "deletions": 18,
+    "changed_files": 3
+  }
+]
