@@ -9,7 +9,9 @@
     "reviewability": 100,
     "action": "review now",
     "next_step": "Review now while the PR appears small, active, and low risk.",
-    "flags": [],
+    "flags": [
+      "incomplete file list"
+    ],
     "signals": [
       "CI passed",
       "review required",
@@ -34,7 +36,7 @@
       "total": 2
     },
     "files": {
-      "code_files": 2,
+      "code_files": 1,
       "doc_files": 0,
       "test_files": 1,
       "generated_files": 0,
@@ -66,7 +68,7 @@
       "stale 22 days",
       "maintainer blocker language",
       "no test plan found",
-      "code changed without tests"
+      "incomplete file list"
     ],
     "signals": [],
     "score_breakdown": [
@@ -104,14 +106,9 @@
         "label": "no test plan found",
         "risk_delta": 8,
         "kind": "flag"
-      },
-      {
-        "label": "code changed without tests",
-        "risk_delta": 10,
-        "kind": "flag"
       }
     ],
-    "raw_risk": 163,
+    "raw_risk": 153,
     "checks": {
       "passed": 0,
       "failed": 1,

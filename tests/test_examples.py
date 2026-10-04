@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from pathlib import Path
+import subprocess
+import sys
 import unittest
 
 
@@ -9,6 +11,13 @@ PUBLISHED_ACTION_VERSION = "v0.20.0"
 
 
 class ExampleTests(unittest.TestCase):
+    def test_generated_reports_match_current_scoring(self) -> None:
+        result = subprocess.run(
+            [sys.executable, str(ROOT / "scripts/generate_examples.py"), "--check"],
+            capture_output=True, text=True, check=False,
+        )
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
     def test_github_action_examples_use_reusable_action(self) -> None:
         for path in (ROOT / "examples" / "github-actions").glob("*.yml"):
             with self.subTest(path=path.name):

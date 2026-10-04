@@ -7,6 +7,9 @@ without network access and uses the same analysis function as a live scan.
 Change the time budget to see which tasks fit, or expand a PR to see the
 signals behind its suggested next step.
 
+For a terminal walkthrough with saved inputs and plans, see the
+[worked example](worked-example.md). It uses a separate two-PR fixture.
+
 ## Try your repository
 
 Enter `owner/repo` or paste a GitHub repository URL. The browser reads the

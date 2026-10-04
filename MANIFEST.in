@@ -1,0 +1,6 @@
+include *.md action.yml Makefile
+recursive-include .github *.yml
+recursive-include docs *.md *.html *.js *.css *.svg *.png
+recursive-include examples *.md *.json *.csv *.html *.yml
+recursive-include scripts *.py
+recursive-include tests *.py *.js *.json

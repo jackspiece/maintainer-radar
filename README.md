@@ -12,6 +12,10 @@ time you have. You still review the code and decide what to do.
 with a working example queue, or scan five recent PRs from a public repository.
 No installation or sign-in is needed for the demo.
 
+Prefer a reproducible walkthrough? [Compare a 15-minute and 30-minute session](docs/worked-example.md)
+using a fictional two-PR queue, with the input, generated plans, and limits
+shown side by side.
+
 | What is in the queue | What Radar suggests |
 | --- | --- |
 | A small change with passing checks and tests | Start a review |
@@ -132,6 +136,7 @@ See [GitHub Action usage](docs/github-action.md) and [attention workflows](docs/
 ## Documentation
 
 - [Two minute quickstart](docs/quickstart.md)
+- [Worked example with reproducible output](docs/worked-example.md)
 - [Adoption guide](docs/adoption.md)
 - [GitHub Action](docs/github-action.md)
 - [Review plans](docs/review-plan.md)
