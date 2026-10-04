@@ -51,7 +51,7 @@ class RenderTests(unittest.TestCase):
         self.assertIn("review now", output)
         self.assertIn("Review now while the PR appears small, active, and low risk.", output)
         self.assertIn("90", output)
-        self.assertIn("CI passed (-8 risk)", output)
+        self.assertIn(r"CI passed \(-8 risk\)", output)
         self.assertIn("Average reviewability: 90/100\n\n| PR |", output)
 
     def test_markdown_can_group_queue_by_action(self) -> None:
@@ -366,7 +366,7 @@ class RenderTests(unittest.TestCase):
         self.assertIn("Workflow mode: review-sprint", output)
         self.assertIn("Workflow recommendation: Start a focused review block", output)
         self.assertIn("| Order | PR | Action | Est. | Next Step | Why |", output)
-        self.assertIn("[#1 Ready](https://example.test/pull/1)", output)
+        self.assertIn(r"[\#1 Ready](https://example.test/pull/1)", output)
         self.assertIn("12m", output)
         self.assertIn("### Watch Only", output)
         self.assertIn("#2 Wait", output)
@@ -388,7 +388,7 @@ class RenderTests(unittest.TestCase):
         )
 
         self.assertIn("### Draft Follow-ups", output)
-        self.assertIn("#### [#2 Fix CI](https://example.test/pull/2)", output)
+        self.assertIn(r"#### [\#2 Fix CI](https://example.test/pull/2)", output)
         self.assertIn("```markdown", output)
         self.assertIn("Before the next review, could you please:", output)
         self.assertNotIn("Reviewability score", output)

@@ -503,17 +503,29 @@
     return "Triage manually before assigning reviewer time.";
   }
 
-  function markdownCell(value) {
-    return String(value || "")
-      .replaceAll("\n", " ")
-      .replaceAll("|", "\\|")
-      .trim();
+  function markdownText(value, { table = false } = {}) {
+    // Keep source metadata untouched; only flatten line endings at render time.
+    const text = String(value ?? "")
+      .replace(/\r\n?|\n/g, " ")
+      .replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
+      .replace(/([\\`*_\[\]~#!()])/g, "\\$1")
+      .replaceAll("\t", "&#9;");
+    return table ? text.replaceAll("|", "&#124;") : text;
+  }
+
+  function markdownDestination(value) {
+    // Match the CLI's destination encoding, including literal entity-like text.
+    return String(value)
+      .replace(/[^A-Za-z0-9:/?#@!$&'*,;=+%.~_-]/gu, (char) => encodeURIComponent(char))
+      .replace(/[()]/g, (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`)
+      .replaceAll("&", "&amp;");
   }
 
   function markdownPrLabel(item) {
-    const title = markdownCell(`#${item.number} ${item.title}`);
+    const title = item.title || "Untitled";
+    const label = markdownText(item.number ? `#${item.number} ${title}` : title);
     const url = safePullUrl(item.url);
-    return url ? `[${title}](${url})` : title;
+    return url ? `[${label}](${markdownDestination(url)})` : label;
   }
 
   function intValue(value) {
@@ -653,7 +665,7 @@
     const plan = buildReviewPlan(items, budgetMinutes);
     const label = source === "sample" ? "Example queue (fictional pull requests)" : repository;
     const lines = [
-      `## Review plan: ${label}`, "",
+      `## Review plan: ${markdownText(label)}`, "",
       `Time available: ${plan.budgetMinutes} minutes. Estimated work: ${plan.plannedMinutes} minutes.`,
       `Based on ${items.length} ${source === "sample" ? "example" : "recent open"} pull requests. Estimates are approximate.`, "",
     ];
@@ -662,12 +674,12 @@
     }
     if (!plan.planned.length) lines.push("No active review work in this queue.", "");
     for (const [index, entry] of plan.planned.entries()) {
-      lines.push(`${index + 1}. ${markdownPrLabel(entry.item)} (${entry.estimatedMinutes} min)`, `   ${entry.item.nextStep}`, "");
+      lines.push(`${index + 1}. ${markdownPrLabel(entry.item)} (${entry.estimatedMinutes} min)`, `   ${markdownText(entry.item.nextStep)}`, "");
     }
     for (const [heading, entries] of [["Leave for later", plan.deferred], ["Waiting on someone else or CI", plan.waiting]]) {
       if (!entries.length) continue;
       lines.push(`### ${heading}`, "");
-      for (const { item } of entries) lines.push(`- ${markdownPrLabel(item)}: ${item.nextStep}`);
+      for (const { item } of entries) lines.push(`- ${markdownPrLabel(item)}: ${markdownText(item.nextStep)}`);
       lines.push("");
     }
     lines.push("Prepared with Maintainer Radar. Check the code and discussion before acting.", "");

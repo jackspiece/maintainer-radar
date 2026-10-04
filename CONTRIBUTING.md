@@ -95,3 +95,19 @@ When the batch is ready:
 
 Publishing a release triggers the existing PyPI workflow. Trusted publishing
 must be configured for the `pypi` environment before using it.
+
+## Markdown Parser Regression Checks
+
+The dependency-free suite checks Markdown escaping and source preservation. For
+additional rendered-output checks, install `markdown-it-py` in your development
+environment and make the `marked` Node package available. These are test-only
+tools; Maintainer Radar has no new runtime dependencies.
+
+```bash
+PYTHONPATH=src python -m unittest discover -s tests -p test_markdown_integrity.py -v
+```
+
+If Marked is installed outside the checkout, set `MARKED_MODULE` to its absolute
+ESM module path. The two parser checks skip with an explicit reason when their
+optional tools are missing. Both parsers exercise report tables, CLI review
+plans, browser-demo exports, literal titles, and exact link destinations.

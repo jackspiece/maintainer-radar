@@ -138,3 +138,17 @@ AI reviewers inspect code after someone chooses a PR. Maintainer Radar helps
 choose where maintainer attention should go before that review starts. It stays
 read-only and does not approve, reject, merge, label, or comment on pull
 requests.
+
+## Literal Metadata in Markdown
+
+Markdown reports, review plans, and browser exports display titles and other
+metadata as literal text. Pipes cannot create extra table columns, and LF, CR,
+and CRLF line endings become spaces at the rendering boundary. Markdown syntax
+and HTML in a title are displayed rather than interpreted. Link destinations
+encode Markdown delimiters without changing existing percent escapes or
+entity-looking query values.
+
+The CLI renders HTTP(S) links, including links to other forges; the browser demo
+continues to accept only HTTPS GitHub links. This is a scheme/format check, not
+a guarantee that a destination is trustworthy. JSON and CSV preserve the source
+metadata, including its original line endings and punctuation.

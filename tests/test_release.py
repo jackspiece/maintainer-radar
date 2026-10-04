@@ -47,6 +47,21 @@ class ReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "X.Y.Z"):
             validate_release("0.21", "## 0.21\n\n- A change.\n")
 
+    def test_canonical_stable_versions_are_accepted(self) -> None:
+        for version in ("0.0.0", "0.21.0", "1.0.0", "10.20.30", "1234567890.9876543210.1234567890"):
+            for tag in (None, f"v{version}"):
+                with self.subTest(version=version, tag=tag):
+                    validate_release(version, f"## {version}\n\n- A change.\n", tag)
+
+    def test_noncanonical_stable_versions_are_rejected(self) -> None:
+        for version in (
+            "00.21.0", "0.021.0", "0.21.00", "01.2.3", "1.02.3", "1.2.03",
+            "\u0660.21.0", "0.\u0662\u0661.0", "0.21.\u0660", "\uff10.\uff12\uff11.\uff10",
+        ):
+            for tag in (None, f"v{version}"):
+                with self.subTest(version=version, tag=tag), self.assertRaisesRegex(ValueError, "X.Y.Z"):
+                    validate_release(version, f"## {version}\n\n- A change.\n", tag)
+
 
 if __name__ == "__main__":
     unittest.main()

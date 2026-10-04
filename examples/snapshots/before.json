@@ -1,0 +1,185 @@
+[
+  {
+    "number": 42,
+    "title": "Fix parser cache race",
+    "url": "https://github.com/example/project/pull/42",
+    "author": "contributor-a",
+    "labels": [],
+    "risk": 30,
+    "reviewability": 70,
+    "action": "ask for CI fix",
+    "next_step": "Ask the author to get failing checks green before deeper review.",
+    "flags": [
+      "CI failing",
+      "incomplete file list"
+    ],
+    "signals": [
+      "review required",
+      "mergeable",
+      "review requested",
+      "test plan present",
+      "tests changed"
+    ],
+    "score_breakdown": [
+      {
+        "label": "CI failing",
+        "risk_delta": 30,
+        "kind": "flag"
+      }
+    ],
+    "raw_risk": 30,
+    "checks": {
+      "passed": 0,
+      "failed": 1,
+      "pending": 0,
+      "skipped": 0,
+      "total": 1
+    },
+    "files": {
+      "code_files": 1,
+      "doc_files": 0,
+      "test_files": 1,
+      "generated_files": 0,
+      "total_files": 2
+    },
+    "merge_state_status": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "review_requests": 1,
+    "stale_days": 0,
+    "additions": 42,
+    "deletions": 18,
+    "changed_files": 3
+  },
+  {
+    "number": 43,
+    "title": "Add universal plugin system",
+    "url": "https://github.com/example/project/pull/43",
+    "author": "contributor-b",
+    "labels": [],
+    "risk": 100,
+    "reviewability": 0,
+    "action": "ask for CI fix",
+    "next_step": "Ask the author to get failing checks green before deeper review.",
+    "flags": [
+      "very large diff",
+      "CI failing",
+      "changes requested",
+      "merge conflicts",
+      "stale 22 days",
+      "maintainer blocker language",
+      "no test plan found",
+      "incomplete file list"
+    ],
+    "signals": [],
+    "score_breakdown": [
+      {
+        "label": "very large diff",
+        "risk_delta": 30,
+        "kind": "flag"
+      },
+      {
+        "label": "CI failing",
+        "risk_delta": 30,
+        "kind": "flag"
+      },
+      {
+        "label": "changes requested",
+        "risk_delta": 25,
+        "kind": "flag"
+      },
+      {
+        "label": "merge conflicts",
+        "risk_delta": 20,
+        "kind": "flag"
+      },
+      {
+        "label": "stale 22 days",
+        "risk_delta": 15,
+        "kind": "flag"
+      },
+      {
+        "label": "maintainer blocker language",
+        "risk_delta": 25,
+        "kind": "flag"
+      },
+      {
+        "label": "no test plan found",
+        "risk_delta": 8,
+        "kind": "flag"
+      }
+    ],
+    "raw_risk": 153,
+    "checks": {
+      "passed": 0,
+      "failed": 1,
+      "pending": 0,
+      "skipped": 0,
+      "total": 1
+    },
+    "files": {
+      "code_files": 1,
+      "doc_files": 0,
+      "test_files": 0,
+      "generated_files": 0,
+      "total_files": 1
+    },
+    "merge_state_status": "DIRTY",
+    "mergeable": "CONFLICTING",
+    "review_requests": 0,
+    "stale_days": 22,
+    "additions": 2200,
+    "deletions": 120,
+    "changed_files": 40
+  },
+  {
+    "number": 44,
+    "title": "Clarify cache configuration",
+    "url": "https://github.com/example/project/pull/44",
+    "author": "contributor-a",
+    "labels": [],
+    "risk": 0,
+    "reviewability": 100,
+    "action": "review now",
+    "next_step": "Review now while the PR appears small, active, and low risk.",
+    "flags": [
+      "incomplete file list"
+    ],
+    "signals": [
+      "CI passed",
+      "review required",
+      "mergeable",
+      "review requested",
+      "test plan present",
+      "tests changed"
+    ],
+    "score_breakdown": [
+      {
+        "label": "CI passed",
+        "risk_delta": -8,
+        "kind": "signal"
+      }
+    ],
+    "raw_risk": -8,
+    "checks": {
+      "passed": 2,
+      "failed": 0,
+      "pending": 0,
+      "skipped": 0,
+      "total": 2
+    },
+    "files": {
+      "code_files": 1,
+      "doc_files": 0,
+      "test_files": 1,
+      "generated_files": 0,
+      "total_files": 2
+    },
+    "merge_state_status": "CLEAN",
+    "mergeable": "MERGEABLE",
+    "review_requests": 1,
+    "stale_days": 0,
+    "additions": 42,
+    "deletions": 18,
+    "changed_files": 3
+  }
+]

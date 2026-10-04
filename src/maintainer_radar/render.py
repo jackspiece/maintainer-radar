@@ -6,6 +6,7 @@ from io import StringIO
 import json
 import re
 from typing import Any
+from urllib.parse import quote
 
 
 CSV_FIELDS = [
@@ -258,7 +259,7 @@ HTML_TEMPLATE = """<!doctype html>
       color: var(--muted);
       font-size: 13px;
     }}
-  </style>
+{queue_styles}  </style>
 </head>
 <body>
   <main>
@@ -330,8 +331,103 @@ HTML_TEMPLATE = """<!doctype html>
       }});
     }})();
   </script>
-</body>
+{queue_script}</body>
 </html>
+"""
+
+
+# Only ungrouped full queues opt into this progressive enhancement. Keep all
+# report data in escaped HTML, never interpolated into executable JavaScript.
+QUEUE_FILTER_STYLES = """    .queue-filters {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 14px;
+    }
+    .queue-filters[hidden], .queue-report [hidden] {
+      display: none;
+    }
+    .queue-search { flex: 2 1 16rem; min-width: 0; }
+    .queue-action { flex: 1 1 13rem; min-width: 0; }
+    .queue-filters label { display: block; font-weight: 700; margin-bottom: 4px; }
+    .queue-filters input, .queue-filters select, .queue-filters button {
+      box-sizing: border-box;
+      max-width: 100%;
+      min-height: 44px;
+      border: 1px solid var(--muted);
+      border-radius: 6px;
+      background: var(--panel);
+      color: var(--text);
+      padding: 8px 10px;
+      font: inherit;
+      font-size: 16px;
+    }
+    .queue-filters input, .queue-filters select { width: 100%; }
+    .queue-filters button { cursor: pointer; font-weight: 700; }
+    .queue-report :focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+    .queue-help { color: var(--muted); font-size: 13px; overflow-wrap: anywhere; }
+    .queue-count { font-weight: 700; }
+    .queue-table-region { max-width: 100%; overflow-x: auto; border-radius: 8px; }
+    .queue-table-region table { min-width: 760px; table-layout: fixed; }
+    .queue-table-region th:nth-child(1) { width: 24%; }
+    .queue-table-region th:nth-child(2) { width: 18%; }
+    .queue-table-region th:nth-child(3) { width: 24%; }
+    .queue-table-region th:nth-child(4) { width: 7%; }
+    .queue-table-region th:nth-child(5), .queue-table-region th:nth-child(6) { width: 13%; }
+    .queue-table-region td { overflow-wrap: anywhere; }
+    .queue-table-region .action { white-space: normal; }
+"""
+
+QUEUE_FILTER_SCRIPT = """  <script>
+    (() => {
+      const form = document.getElementById("queue-filters");
+      const search = document.getElementById("queue-search");
+      const action = document.getElementById("queue-action");
+      const reset = document.getElementById("queue-reset");
+      const count = document.getElementById("queue-count");
+      const empty = document.getElementById("queue-filter-empty");
+      const region = document.getElementById("queue-results");
+      const fallback = document.getElementById("queue-filter-fallback");
+      if (!form || !search || !action || !reset || !count || !empty || !region || !fallback) {
+        return;
+      }
+      const normalize = (text) => text.normalize("NFC").toLowerCase();
+      const rows = Array.from(region.querySelectorAll("tbody tr"), (row) => ({
+        row,
+        text: normalize(Array.from(row.cells, (cell) => cell.textContent).join(" ")),
+        action: row.querySelector(".action").textContent
+      }));
+      function applyFilters() {
+        const query = normalize(search.value.trim());
+        const selectedAction = action.value;
+        let shown = 0;
+        for (const entry of rows) {
+          const matches = entry.text.includes(query) &&
+            (!selectedAction || entry.action === selectedAction);
+          entry.row.hidden = !matches;
+          if (matches) shown += 1;
+        }
+        count.textContent = `Showing ${shown} of ${rows.length} PRs`;
+        empty.hidden = shown !== 0 || rows.length === 0;
+      }
+      form.addEventListener("submit", (event) => event.preventDefault());
+      search.addEventListener("input", applyFilters);
+      action.addEventListener("change", applyFilters);
+      reset.addEventListener("click", () => {
+        search.value = "";
+        action.value = "";
+        applyFilters();
+        search.focus();
+      });
+      applyFilters();
+      fallback.hidden = true;
+      form.hidden = false;
+    })();
+  </script>
 """
 
 
@@ -697,7 +793,7 @@ def render_summary_markdown(
 ) -> str:
     summary = summarize_report(analyses)
     lines = [
-        f"## {title}",
+        f"## {_markdown_text(title)}",
         "",
         str(summary["queue_headline"]),
         "",
@@ -736,7 +832,7 @@ def render_review_plan_markdown(
     plan = build_review_plan(analyses, budget_minutes)
     summary = summarize_report(analyses)
     lines = [
-        f"## {title}",
+        f"## {_markdown_text(title)}",
         "",
         f"- Time budget: {plan['budget_minutes']} minutes",
         f"- Planned PRs: {len(plan['planned'])}",
@@ -764,7 +860,7 @@ def render_review_plan_markdown(
         )
         for index, entry in enumerate(plan["planned"], 1):
             item = entry["item"]
-            label = _markdown_pr_label(item)
+            label = _markdown_pr_label(item, table=True)
             lines.append(
                 f"| {index} | {label} | {markdown_cell(item.get('action'))} | "
                 f"{entry['estimated_minutes']}m | {markdown_cell(_next_step(item))} | "
@@ -779,14 +875,14 @@ def render_review_plan_markdown(
             item = entry["item"]
             lines.append(
                 f"- {_markdown_pr_label(item)}: {entry['estimated_minutes']}m, "
-                f"{markdown_cell(item.get('action'))}"
+                f"{_markdown_text(item.get('action'))}"
             )
 
     if plan["waiting"]:
         lines.extend(["", "### Watch Only", ""])
         for entry in plan["waiting"][:5]:
             item = entry["item"]
-            lines.append(f"- {_markdown_pr_label(item)}: {markdown_cell(_next_step(item))}")
+            lines.append(f"- {_markdown_pr_label(item)}: {_markdown_text(_next_step(item))}")
 
     follow_ups = _review_plan_follow_up_entries(plan)
     if follow_ups:
@@ -822,6 +918,8 @@ def render_review_plan_html(
         subtitle="Deterministic maintainer review plan.",
         summary=summary_html,
         table=plan_html,
+        queue_styles="",
+        queue_script="",
     )
 
 
@@ -894,12 +992,18 @@ def render_html(
 ) -> str:
     safe_title = escape(title)
     summary_html = _render_html_summary(analyses)
-    table_html = "" if summary_only else _render_html_table(analyses, group_by=group_by)
+    filterable = not summary_only and group_by is None
+    if filterable:
+        table_html = _render_html_filterable_queue(analyses)
+    else:
+        table_html = "" if summary_only else _render_html_table(analyses, group_by=group_by)
     return HTML_TEMPLATE.format(
         title=safe_title,
         subtitle="Deterministic maintainer triage report.",
         summary=summary_html,
         table=table_html,
+        queue_styles=QUEUE_FILTER_STYLES if filterable else "",
+        queue_script=QUEUE_FILTER_SCRIPT if filterable else "",
     )
 
 
@@ -911,6 +1015,8 @@ def render_comment_html(comment: str) -> str:
         subtitle="Draft maintainer follow-up comment.",
         summary="",
         table=body,
+        queue_styles="",
+        queue_script="",
     )
 
 
@@ -926,18 +1032,45 @@ def _next_step(item: dict[str, Any]) -> str:
     return str(item.get("next_step") or "Triage manually before assigning reviewer time.")
 
 
+def _markdown_text(value: Any, *, table: bool = False) -> str:
+    """Render literal, single-line inline text; never alter source metadata.
+
+    A pipe entity avoids GFM table splitting even after a literal backslash.
+    Escaping ampersands first keeps source entities (such as ``&lt;``) literal.
+    """
+    text = re.sub(r"\r\n?|\n", " ", str(value if value is not None else ""))
+    text = escape(text, quote=False)
+    text = re.sub(r"([\\`*_\[\]~#!()])", r"\\\1", text)
+    text = text.replace("\t", "&#9;")
+    return text.replace("|", "&#124;") if table else text
+
+
 def markdown_cell(value: Any) -> str:
-    return str(value or "").replace("\n", " ").replace("|", "\\|").strip()
+    """Render one literal Markdown table cell, not preformatted Markdown."""
+    return _markdown_text(value, table=True)
 
 
-def _markdown_pr_label(item: dict[str, Any]) -> str:
+def _markdown_link(label: Any, url: Any, *, table: bool = False) -> str:
+    text = _markdown_text(label, table=table)
+    destination = str(url or "")
+    if not destination.startswith(("https://", "http://")):
+        return text
+    # Keep URL delimiters and existing percent escapes, but encode whitespace,
+    # parentheses, backslashes, pipes, and angle brackets before interpolation.
+    # Markdown decodes character references even within link destinations.
+    try:
+        destination = quote(destination, safe=":/?#@!$&'*,;=+%-._~")
+    except UnicodeEncodeError:
+        return text
+    destination = destination.replace("&", "&amp;")
+    return f"[{text}]({destination})"
+
+
+def _markdown_pr_label(item: dict[str, Any], *, table: bool = False) -> str:
     number = item.get("number")
-    title_text = markdown_cell(item.get("title") or "Untitled")
+    title_text = item.get("title") or "Untitled"
     label = f"#{number} {title_text}" if number else title_text
-    url = str(item.get("url") or "")
-    if url.startswith(("https://", "http://")):
-        return f"[{label}]({url})"
-    return label
+    return _markdown_link(label, item.get("url"), table=table)
 
 
 def _int_value(value: Any) -> int:
@@ -1264,6 +1397,38 @@ def _render_html_summary(analyses: list[dict[str, Any]]) -> str:
     return f'{workflow}{session}<section class="metrics">{items}</section>'
 
 
+def _render_html_filterable_queue(analyses: list[dict[str, Any]]) -> str:
+    options = '<option value="">All actions</option>' + "".join(
+        f'<option value="{escape(action, quote=True)}">{escape(action)}</option>'
+        for action, _items in _group_by_action(analyses)
+    )
+    total = len(analyses)
+    return (
+        '<section class="queue-report" aria-label="Pull request queue">'
+        '<form id="queue-filters" class="queue-filters" hidden '
+        'aria-label="Filter pull requests" aria-describedby="queue-help">'
+        '<div class="queue-search"><label for="queue-search">Search queue</label>'
+        '<input id="queue-search" type="search" autocomplete="off" '
+        'aria-controls="queue-results" aria-describedby="queue-help"></div>'
+        '<div class="queue-action"><label for="queue-action">Action</label>'
+        f'<select id="queue-action" aria-controls="queue-results">{options}</select></div>'
+        '<button id="queue-reset" type="button">Reset filters</button></form>'
+        '<p id="queue-help" class="queue-help">Search the displayed cells using case-insensitive '
+        'literal text; accents matter. Filters work only in this file and combine with the action. '
+        'Summary metrics above always describe the full report. '
+        'On narrow screens, scroll the table horizontally.</p>'
+        f'<p id="queue-count" class="queue-count" role="status" '
+        f'aria-live="polite" aria-atomic="true">Showing {total} of {total} PRs</p>'
+        '<p id="queue-filter-fallback" class="queue-help">All report rows are shown. '
+        'Local filters require JavaScript.</p>'
+        '<p id="queue-filter-empty" class="empty" hidden>No pull requests match these filters. '
+        'Clear the search or reset filters to show all rows.</p>'
+        '<div id="queue-results" class="queue-table-region" role="region" '
+        'aria-label="Pull request queue table" tabindex="0">'
+        f'{_render_html_table(analyses)}</div></section>'
+    )
+
+
 def _render_html_table(analyses: list[dict[str, Any]], *, group_by: str | None = None) -> str:
     if not analyses:
         return '<p class="empty">No pull requests matched this report.</p>'
@@ -1351,7 +1516,7 @@ def render_markdown(
         for action, items in _group_by_action(analyses):
             count = len(items)
             label = "PR" if count == 1 else "PRs"
-            lines.extend([f"### {action} ({count} {label})", ""])
+            lines.extend([f"### {_markdown_text(action)} ({count} {label})", ""])
             _append_markdown_table(lines, items)
             lines.append("")
     else:
@@ -1378,19 +1543,14 @@ def _append_markdown_table(lines: list[str], analyses: list[dict[str, Any]]) -> 
 
 
 def _render_markdown_row(item: dict[str, Any]) -> str:
-    number = item.get("number")
-    title_text = item.get("title") or "Untitled"
-    url = item.get("url")
-    label = f"#{number} {title_text}" if number else title_text
-    if url:
-        label = f"[{label}]({url})"
+    label = _markdown_pr_label(item, table=True)
     signals = item.get("signals") or []
     flags = item.get("flags") or []
     impact_text = _join_score_breakdown(item.get("score_breakdown")) or "no score changes"
     signal_text = ", ".join([*signals, *flags]) or "no notable signals"
     return (
-        f"| {label} | {item.get('action')} | {_next_step(item)} | "
-        f"{item.get('reviewability')} | {impact_text} | {signal_text} |"
+        f"| {label} | {markdown_cell(item.get('action'))} | {markdown_cell(_next_step(item))} | "
+        f"{markdown_cell(item.get('reviewability'))} | {markdown_cell(impact_text)} | {markdown_cell(signal_text)} |"
     )
 
 
@@ -1408,11 +1568,11 @@ def _group_by_action(analyses: list[dict[str, Any]]) -> list[tuple[str, list[dic
 
 def render_detail(item: dict[str, Any]) -> str:
     lines = [
-        f"## PR #{item.get('number')} Maintainer Brief",
+        f"## PR #{_markdown_text(item.get('number'))} Maintainer Brief",
         "",
-        f"- **Title:** {item.get('title')}",
-        f"- **Action:** {item.get('action')}",
-        f"- **Next step:** {_next_step(item)}",
+        f"- **Title:** {_markdown_text(item.get('title'))}",
+        f"- **Action:** {_markdown_text(item.get('action'))}",
+        f"- **Next step:** {_markdown_text(_next_step(item))}",
         f"- **Reviewability:** {item.get('reviewability')}/100",
         f"- **Risk:** {item.get('risk')}/100",
     ]
@@ -1420,9 +1580,9 @@ def render_detail(item: dict[str, Any]) -> str:
     if raw_risk is not None and raw_risk != item.get("risk"):
         lines.append(f"- **Raw risk before clamp:** {raw_risk}")
     if item.get("url"):
-        lines.append(f"- **URL:** {item.get('url')}")
+        lines.append(f"- **URL:** {_markdown_text(item.get('url'))}")
     if item.get("author"):
-        lines.append(f"- **Author:** {item.get('author')}")
+        lines.append(f"- **Author:** {_markdown_text(item.get('author'))}")
     if item.get("stale_days") is not None:
         lines.append(f"- **Last activity:** {item.get('stale_days')} days ago")
 
@@ -1458,7 +1618,7 @@ def render_detail(item: dict[str, Any]) -> str:
             label = str(entry.get("label") or "").strip()
             if label:
                 delta = _format_risk_delta(entry.get("risk_delta"))
-                lines.append(f"- {label}: {delta} risk")
+                lines.append(f"- {_markdown_text(label)}: {delta} risk")
     else:
         lines.append("- No score adjustments detected")
 
@@ -1466,13 +1626,13 @@ def render_detail(item: dict[str, Any]) -> str:
     signals = item.get("signals") or []
     lines.extend(["", "### Signals", ""])
     if signals:
-        lines.extend(f"- {signal}" for signal in signals)
+        lines.extend(f"- {_markdown_text(signal)}" for signal in signals)
     else:
         lines.append("- No positive signals detected")
 
     lines.extend(["", "### Flags", ""])
     if flags:
-        lines.extend(f"- {flag}" for flag in flags)
+        lines.extend(f"- {_markdown_text(flag)}" for flag in flags)
     else:
         lines.append("- No risk flags detected")
 

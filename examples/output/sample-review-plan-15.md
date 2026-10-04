@@ -12,15 +12,15 @@
 
 | Order | PR | Action | Est. | Next Step | Why |
 | ---: | --- | --- | ---: | --- | --- |
-| 1 | [#42 Fix parser cache race](https://github.com/example/project/pull/42) | review now | 12m | Review now while the PR appears small, active, and low risk. | incomplete file list |
+| 1 | [\#42 Fix parser cache race](https://github.com/example/project/pull/42) | review now | 12m | Review now while the PR appears small, active, and low risk. | incomplete file list |
 
 ### Deferred by Budget
 
-- [#43 Add universal plugin system](https://github.com/example/project/pull/43): 5m, ask for CI fix
+- [\#43 Add universal plugin system](https://github.com/example/project/pull/43): 5m, ask for CI fix
 
 ### Draft Follow-ups
 
-#### [#43 Add universal plugin system](https://github.com/example/project/pull/43)
+#### [\#43 Add universal plugin system](https://github.com/example/project/pull/43)
 
 ```markdown
 Thanks for the PR.

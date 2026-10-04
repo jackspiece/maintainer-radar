@@ -1,6 +1,9 @@
 # Release checklist
 
 The package version is defined only in `src/maintainer_radar/__init__.py`.
+Use stable `X.Y.Z` versions with ASCII digits and no leading zeros in any
+component (for example, `0.21.0`, not `0.21.00`). This keeps the source version
+and tag identical to the version recorded in built distributions.
 The current development batch is **0.21.0**, still marked **Unreleased**.
 Installation examples and generated workflows stay on the published
 **v0.20.0** until a new tag is actually available.
@@ -22,7 +25,7 @@ python -m build
 python -m twine check --strict dist/*
 ```
 
-The test suite checks all six committed offline reports against the current
+The test suite checks all eight committed offline reports against the current
 CLI. When scoring or rendering changes intentionally, run
 `python scripts/generate_examples.py` and review the output diff.
 

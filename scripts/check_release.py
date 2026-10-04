@@ -22,8 +22,13 @@ def read_version(root: Path = ROOT) -> str:
 
 
 def validate_release(version: str, changelog: str, tag: str | None = None) -> None:
-    if not re.fullmatch(r"\d+\.\d+\.\d+", version):
-        raise ValueError(f"Expected a stable X.Y.Z package version, got {version!r}")
+    # Keep the source/tag spelling identical to the built distribution version.
+    # Build backends normalize leading zeros, and Unicode digits are not valid.
+    if not re.fullmatch(r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)", version):
+        raise ValueError(
+            f"Expected a canonical stable X.Y.Z package version "
+            f"(ASCII digits, no leading zeros), got {version!r}"
+        )
     sections = re.split(r"^## (.+)\s*$", changelog, flags=re.MULTILINE)
     entries = list(zip(sections[1::2], sections[2::2]))
     versioned = [(heading, body) for heading, body in entries if heading != "Unreleased"]

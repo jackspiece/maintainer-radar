@@ -89,6 +89,9 @@ It reads pull request metadata through the GitHub CLI, the GitHub Action token, 
 - editable draft follow-ups that a maintainer can review before posting
 
 Reports are available as Markdown, JSON, CSV, and standalone HTML.
+The unreleased source adds local [search and action filters](docs/html-filters.md)
+to full, ungrouped HTML reports. Filtering changes visible rows without changing
+queue totals or scores, and makes no network requests.
 
 ## Plan a review session
 
@@ -142,6 +145,8 @@ See [GitHub Action usage](docs/github-action.md) and [attention workflows](docs/
 - [Review plans](docs/review-plan.md)
 - [Scoring heuristics](docs/heuristics.md)
 - [Configuration](docs/configuration.md)
+- [Offline snapshot comparison (unreleased source)](docs/snapshot-comparison.md)
+- [Local HTML report filters (unreleased source)](docs/html-filters.md)
 - [Privacy and permissions](docs/privacy-permissions.md)
 - [Project positioning](docs/positioning.md)
 - [GitLab JSON](docs/gitlab-json.md)

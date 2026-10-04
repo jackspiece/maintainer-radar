@@ -54,3 +54,19 @@ The generator ignores a local `.maintainer-radar.json` so outputs are stable.
 Tests fail if a committed example no longer matches the current CLI.
 Read the [worked example](../docs/worked-example.md) for the inputs, expected
 results, incomplete-file caveats, and what the estimates do not establish.
+
+## Offline snapshot comparison
+
+The unreleased `compare` command uses the fictional analyzed queue snapshots
+`snapshots/before.json` and `snapshots/after.json`. They cover a changed CI/action
+observation, one newly observed PR, one no longer observed PR, and one unchanged
+PR. These are saved analyses, unlike the raw fixture `sample-prs.json`.
+
+```bash
+PYTHONPATH=src python -m maintainer_radar compare \
+  examples/snapshots/before.json examples/snapshots/after.json
+```
+
+`output/sample-comparison.md` and `output/sample-comparison.json` are generated
+from that pair by the same examples script. See the [comparison guide](../docs/snapshot-comparison.md)
+for accepted inputs and the limits on conclusions from missing PRs or changed scores.

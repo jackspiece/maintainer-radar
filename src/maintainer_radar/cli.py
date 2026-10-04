@@ -9,6 +9,7 @@ import re
 import sys
 from typing import Any, Callable
 
+from .compare import compare_snapshots, load_snapshot, render_comparison
 from .config import CONFIG_PROFILES, load_config, render_config_profile
 from .github import GitHubCliError, list_repo_prs, search_author_prs, view_pr
 from .normalize import normalize_items
@@ -548,6 +549,11 @@ def build_parser() -> argparse.ArgumentParser:
     add_group_by_argument(from_json)
     add_review_plan_argument(from_json)
 
+    compare = sub.add_parser("compare", help="Compare two saved full-queue JSON reports offline.")
+    add_recommend_format_argument(compare, default=argparse.SUPPRESS)
+    compare.add_argument("before", help="Earlier analyzed queue JSON file (not a raw forge export).")
+    compare.add_argument("after", help="Later analyzed queue JSON file (not a summary or review plan).")
+
     init_action = sub.add_parser(
         "init-action",
         help="Print or write a read-only GitHub Actions triage workflow.",
@@ -723,6 +729,13 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     try:
+        if args.command == "compare":
+            if args.format not in {"markdown", "json"}:
+                raise ValueError("compare supports --format markdown or json")
+            report = compare_snapshots(load_snapshot(args.before), load_snapshot(args.after))
+            print(render_comparison(report, args.format), end="")
+            return 0
+
         if args.command == "init-action":
             workflow = render_github_action_workflow(
                 report_format=args.report_format,

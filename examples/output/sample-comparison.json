@@ -1,0 +1,240 @@
+{
+  "changed": [
+    {
+      "after": {
+        "action": "review now",
+        "checks": {
+          "failed": 0,
+          "passed": 2,
+          "pending": 0,
+          "skipped": 0,
+          "total": 2
+        },
+        "flags": [
+          "incomplete file list"
+        ],
+        "next_step": "Review now while the PR appears small, active, and low risk.",
+        "number": 42,
+        "reviewability": 100,
+        "risk": 0,
+        "signals": [
+          "CI passed",
+          "mergeable",
+          "review requested",
+          "review required",
+          "test plan present",
+          "tests changed"
+        ],
+        "title": "Fix parser cache race",
+        "url": "https://github.com/example/project/pull/42"
+      },
+      "before": {
+        "action": "ask for CI fix",
+        "checks": {
+          "failed": 1,
+          "passed": 0,
+          "pending": 0,
+          "skipped": 0,
+          "total": 1
+        },
+        "flags": [
+          "CI failing",
+          "incomplete file list"
+        ],
+        "next_step": "Ask the author to get failing checks green before deeper review.",
+        "number": 42,
+        "reviewability": 70,
+        "risk": 30,
+        "signals": [
+          "mergeable",
+          "review requested",
+          "review required",
+          "test plan present",
+          "tests changed"
+        ],
+        "title": "Fix parser cache race",
+        "url": "https://github.com/example/project/pull/42"
+      },
+      "changes": [
+        {
+          "after": "review now",
+          "before": "ask for CI fix",
+          "field": "action"
+        },
+        {
+          "after": 0,
+          "before": 30,
+          "field": "risk"
+        },
+        {
+          "after": 100,
+          "before": 70,
+          "field": "reviewability"
+        },
+        {
+          "after": "Review now while the PR appears small, active, and low risk.",
+          "before": "Ask the author to get failing checks green before deeper review.",
+          "field": "next_step"
+        },
+        {
+          "after": {
+            "failed": 0,
+            "passed": 2,
+            "pending": 0,
+            "skipped": 0,
+            "total": 2
+          },
+          "before": {
+            "failed": 1,
+            "passed": 0,
+            "pending": 0,
+            "skipped": 0,
+            "total": 1
+          },
+          "field": "checks"
+        },
+        {
+          "after": [
+            "incomplete file list"
+          ],
+          "before": [
+            "CI failing",
+            "incomplete file list"
+          ],
+          "field": "flags"
+        },
+        {
+          "after": [
+            "CI passed",
+            "mergeable",
+            "review requested",
+            "review required",
+            "test plan present",
+            "tests changed"
+          ],
+          "before": [
+            "mergeable",
+            "review requested",
+            "review required",
+            "test plan present",
+            "tests changed"
+          ],
+          "field": "signals"
+        }
+      ],
+      "number": 42,
+      "url": "https://github.com/example/project/pull/42"
+    }
+  ],
+  "comparison_fields": [
+    "title",
+    "action",
+    "risk",
+    "reviewability",
+    "next_step",
+    "checks",
+    "flags",
+    "signals"
+  ],
+  "limitations": [
+    "Snapshots may cover different filters, scan limits, hydration, times, configurations, or Radar versions; queue JSON does not record that provenance. Compare equivalent captures where possible.",
+    "Newly observed and no longer observed describe only these snapshots. Absence does not establish that a pull request was closed or merged.",
+    "Score and action differences are saved observations, not proof of code progress or a cause of change. No records are re-scored and no network requests are made."
+  ],
+  "newly_observed": [
+    {
+      "action": "review now",
+      "checks": {
+        "failed": 0,
+        "passed": 2,
+        "pending": 0,
+        "skipped": 0,
+        "total": 2
+      },
+      "flags": [
+        "incomplete file list"
+      ],
+      "next_step": "Review now while the PR appears small, active, and low risk.",
+      "number": 45,
+      "reviewability": 100,
+      "risk": 0,
+      "signals": [
+        "CI passed",
+        "mergeable",
+        "review requested",
+        "review required",
+        "test plan present",
+        "tests changed"
+      ],
+      "title": "Test empty cache responses",
+      "url": "https://github.com/example/project/pull/45"
+    }
+  ],
+  "no_longer_observed": [
+    {
+      "action": "ask for CI fix",
+      "checks": {
+        "failed": 1,
+        "passed": 0,
+        "pending": 0,
+        "skipped": 0,
+        "total": 1
+      },
+      "flags": [
+        "CI failing",
+        "changes requested",
+        "incomplete file list",
+        "maintainer blocker language",
+        "merge conflicts",
+        "no test plan found",
+        "stale 22 days",
+        "very large diff"
+      ],
+      "next_step": "Ask the author to get failing checks green before deeper review.",
+      "number": 43,
+      "reviewability": 0,
+      "risk": 100,
+      "signals": [],
+      "title": "Add universal plugin system",
+      "url": "https://github.com/example/project/pull/43"
+    }
+  ],
+  "schema_version": 1,
+  "summary": {
+    "after": 3,
+    "before": 3,
+    "changed": 1,
+    "newly_observed": 1,
+    "no_longer_observed": 1,
+    "unchanged": 1
+  },
+  "unchanged": [
+    {
+      "action": "review now",
+      "checks": {
+        "failed": 0,
+        "passed": 2,
+        "pending": 0,
+        "skipped": 0,
+        "total": 2
+      },
+      "flags": [
+        "incomplete file list"
+      ],
+      "next_step": "Review now while the PR appears small, active, and low risk.",
+      "number": 44,
+      "reviewability": 100,
+      "risk": 0,
+      "signals": [
+        "CI passed",
+        "mergeable",
+        "review requested",
+        "review required",
+        "test plan present",
+        "tests changed"
+      ],
+      "title": "Clarify cache configuration",
+      "url": "https://github.com/example/project/pull/44"
+    }
+  ]
+}
