@@ -1,7 +1,7 @@
 # Compare offline queue snapshots
 
 `compare` answers: **what changed between two saved Radar observations?**
-It reads full analyzed queue JSON reports, matches PRs by their exact full URL,
+It reads full analyzed queue JSON arrays or opt-in provenance snapshots, matches PRs by their exact full URL,
 and prints a deterministic Markdown or JSON comparison. It does not contact a
 forge, re-score a PR, post a comment, or modify the input files.
 
@@ -41,9 +41,9 @@ verify them with `python scripts/generate_examples.py` and `--check`.
 With a source-checkout installation, save ordinary full-queue reports:
 
 ```bash
-maintainer-radar repo owner/repo --hydrate --format json > before.json
+maintainer-radar repo owner/repo --hydrate --format json --snapshot > before.json
 # Later, repeat the same capture options and configuration:
-maintainer-radar repo owner/repo --hydrate --format json > after.json
+maintainer-radar repo owner/repo --hydrate --format json --snapshot > after.json
 maintainer-radar compare before.json after.json
 ```
 
@@ -52,9 +52,14 @@ Offline GitHub, GitLab, Forgejo, and Gitea exports can first be analyzed with
 Pass the analyzed reports to `compare`, not the raw forge exports.
 
 Keep repository coverage, filters, limits, hydration, configuration and Radar
-version equivalent where possible. Record those capture details yourself:
-current queue JSON does not embed them, so the comparator cannot verify them.
-A warning about this limitation is always included, even for identical inputs.
+version equivalent where possible. Opt-in `--snapshot` captures retain these
+settings and comparisons highlight differences. See [capture settings](snapshot-provenance.md)
+for the versioned envelope, what is recorded, and a reproducible config-change
+example. Matching recorded settings do not prove equivalent coverage.
+
+Ordinary JSON arrays remain supported. They do not embed provenance; two legacy
+arrays retain the existing report and warning. Mixing an envelope and a legacy
+array reports unknown capture comparability and preserves the available metadata.
 
 The command only writes stdout. It has no output-path or overwrite option.
 If you redirect a report, choose a **different destination from both inputs**:
@@ -63,9 +68,11 @@ return exit code 2 and emit a diagnostic on stderr with no partial report.
 
 ## Input contract and identity
 
-Each file must be a UTF-8 JSON array of full analyzed queue records. Empty
-arrays are valid. Summary/recommendation/review-plan objects, raw forge exports,
-stdin, directories, and malformed or ambiguous records are rejected.
+Each file must be a UTF-8 JSON array of full analyzed queue records, or a
+supported [snapshot envelope](snapshot-provenance.md#envelope-schema-version-1)
+containing those records and validated provenance. Empty queues are valid.
+Summary/recommendation/review-plan objects, raw forge exports, stdin,
+directories, and malformed or ambiguous records are rejected.
 
 Required fields are `number`, `url`, `title`, `action`, `risk`, `reviewability`,
 `next_step`, `checks`, `flags`, and `signals`:
@@ -91,7 +98,10 @@ Required fields are `number`, `url`, `title`, `action`, `risk`, `reviewability`,
 Both snapshots must satisfy this same contract. There is no claim that merely
 validating their shape proves equivalent capture settings or complete coverage.
 The comparison JSON has `schema_version: 1`; that version describes this report
-format and is not a version or provenance claim about the input snapshots.
+format and is distinct from an input envelope's schema version. Legacy-array
+comparisons remain byte-compatible. When either input has provenance, the report
+adds a `provenance` object with before/after metadata, a settings status, and
+explicit setting differences. This is an additive field in comparison schema 1.
 
 ## Compared fields and JSON output
 
@@ -104,8 +114,10 @@ changed score or action. To inspect other details, retain the original reports.
 Input record ordering, JSON object-key ordering, and flag/signal ordering do not
 create changes. Flags/signals are treated as sets (duplicate strings collapse).
 Records are ordered by exact URL; changed fields follow the documented field
-order. No generation timestamp or input path is added, so equivalent inputs
-produce byte-identical output anywhere.
+order. No comparison-generation timestamp or input path is added, so equivalent inputs
+produce byte-identical output anywhere. Supplied envelope metadata, including
+analysis times and counts, is retained as context. Only version, config, and
+capture settings affect the provenance-difference status.
 
 JSON includes `summary`, `limitations`, `comparison_fields`, and four arrays:
 `newly_observed`, `no_longer_observed`, `changed`, and `unchanged`. Added/missing/

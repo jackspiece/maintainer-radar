@@ -25,7 +25,7 @@ jobs:
   report:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
       - name: Build PR report
@@ -53,7 +53,7 @@ jobs:
 | --- | --- | --- |
 | `repository` | current workflow repository | Repository to scan in `owner/name` form. |
 | `format` | `markdown` | Report format: `markdown`, `html`, `json`, or `csv`. |
-| `output` | format-specific path | Output file path. Defaults to `maintainer-radar.md`, `.html`, `.json`, or `.csv`; review plans default to `review-plan.md`, `review-plan.html`, or `review-plan.json`. |
+| `output` | format-specific path | Single-line output file path (no CR or LF). Defaults to `maintainer-radar.md`, `.html`, `.json`, or `.csv`; review plans default to `review-plan.md`, `review-plan.html`, or `review-plan.json`. |
 | `limit` | `50` | Maximum pull requests to scan. |
 | `label` | empty | Only include pull requests with this label. |
 | `author` | empty | Only include pull requests by this author. |
@@ -69,6 +69,11 @@ jobs:
 | `config` | empty | Optional path to a Maintainer Radar config JSON file. |
 | `hydrate` | `true` | Fetch full PR details for body, file, review, merge readiness, and richer scoring signals. |
 | `step-summary` | `true` | Publish Markdown output or a compact summary to the Actions run summary. |
+
+Output paths may contain spaces, Unicode, and leading hyphens. Carriage returns
+(CR) and line feeds (LF) are rejected before creating directories, scanning, or
+writing Action outputs, so `report-path` always remains one output record.
+Labels and config paths beginning with a hyphen are passed as literal CLI values.
 
 ## Outputs
 
@@ -249,7 +254,10 @@ with:
 ## Bootstrap Command
 
 If you already use the CLI locally, generate the workflow instead of writing YAML
-by hand:
+by hand. Text options must be single-line values and cannot contain characters
+excluded by YAML's printable character set; invalid values fail with an option-specific
+error before a workflow is printed or written. Tabs and printable Unicode remain
+supported:
 
 ```bash
 maintainer-radar init-action --path .github/workflows/maintainer-radar.yml
@@ -257,6 +265,20 @@ maintainer-radar init-action --config .maintainer-radar.json --path .github/work
 maintainer-radar init-action --action review-now --min-score 80 --top 10 --path .github/workflows/review-ready.yml
 maintainer-radar init-action --review-plan-minutes 30 --path .github/workflows/review-plan.yml
 ```
+
+`--action-ref` supplies the text of the action's `uses` value, such as
+`owner/repository@tag`, `owner/repository/path@commit`, `./local-action`, or
+`docker://image:tag`. Leading and trailing whitespace is trimmed; an empty
+value uses the default published tag. The generator serializes this value as
+one YAML string, quoting and escaping when needed, including U+0085, U+2028,
+and U+2029 separators. Simple repository, local-path, and Docker references
+retain their unquoted output.
+Quotes in the supplied value are literal data, not preformatted YAML.
+
+This is YAML serialization, not validation that a reference exists or that
+GitHub accepts it. Expression-like text is preserved, and expression support
+in each workflow field remains subject to GitHub's rules. The generator does
+not evaluate expressions or change the existing expression-bearing inputs.
 
 ## Permissions
 

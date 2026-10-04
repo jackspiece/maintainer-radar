@@ -1,7 +1,12 @@
 from __future__ import annotations
 
+import io
+import tempfile
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
+from pathlib import Path
 
+from maintainer_radar.cli import main
 from maintainer_radar.workflow import DEFAULT_ACTION_REF, render_github_action_workflow
 
 
@@ -94,6 +99,40 @@ class WorkflowTests(unittest.TestCase):
         self.assertIn("format: json", output)
         self.assertIn("output: review-plan.json", output)
         self.assertIn("name: review-plan-json", output)
+
+    def test_yaml_forbidden_characters_are_rejected_with_option_context(self) -> None:
+        forbidden = [chr(code) for code in range(0x20) if code not in {9, 10, 13}]
+        forbidden += [chr(code) for code in range(0x7F, 0xA0) if code != 0x85]
+        forbidden += ["\ud800", "\udfff", "\ufffe", "\uffff"]
+        for option in ("config", "label", "author", "updated_since", "schedule", "action_ref"):
+            for character in forbidden:
+                for value in (f"alpha{character}beta", f"{character}alpha", f"alpha{character}"):
+                    with self.subTest(option=option, code=f"U+{ord(character):04X}", value=value):
+                        with self.assertRaisesRegex(ValueError, f"--{option.replace('_', '-')}.*U\\+"):
+                            render_github_action_workflow(**{option: value})
+
+    def test_invalid_config_character_fails_cli_before_output(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            destination = Path(directory) / "nested" / "workflow.yml"
+            for extra in ([], ["--path", str(destination)]):
+                stdout, stderr = io.StringIO(), io.StringIO()
+                with redirect_stdout(stdout), redirect_stderr(stderr):
+                    status = main(["init-action", "--config", "configs/a\x01b.json", *extra])
+                self.assertEqual(status, 2)
+                self.assertEqual(stdout.getvalue(), "")
+                self.assertIn("--config", stderr.getvalue())
+                self.assertIn("U+0001", stderr.getvalue())
+                self.assertNotIn("Traceback", stderr.getvalue())
+                self.assertFalse(destination.parent.exists())
+
+    def test_supported_text_and_expression_values_are_unchanged(self) -> None:
+        value = 'say "yes": 日本語 🛰️ \\ tab\t ${{ github.repository }}'
+        output = render_github_action_workflow(config=value, label=value)
+        escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+        self.assertIn(f'config: "{escaped}"', output)
+        self.assertIn(f'label: "{escaped}"', output)
+        self.assertIn("contents: read\n  pull-requests: read", output)
+        self.assertIn('GH_TOKEN: ${{ github.token }}', output)
 
     def test_render_github_action_workflow_rejects_invalid_values(self) -> None:
         with self.assertRaises(ValueError):

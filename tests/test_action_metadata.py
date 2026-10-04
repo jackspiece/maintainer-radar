@@ -73,10 +73,10 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn('maintainer-radar repo "$repository"', action)
         self.assertEqual(action.count('maintainer-radar repo "$repository"'), 1)
         self.assertIn('--format json > "$ANALYSES_PATH"', action)
-        self.assertIn('radar_args+=(--config "$INPUT_CONFIG")', action)
-        self.assertIn('radar_args+=(--label "$INPUT_LABEL")', action)
-        self.assertIn('radar_args+=(--action "$INPUT_ACTION")', action)
-        self.assertIn('radar_args+=(--min-score "$INPUT_MIN_SCORE")', action)
+        self.assertIn('radar_args+=("--config=$INPUT_CONFIG")', action)
+        self.assertIn('radar_args+=("--label=$INPUT_LABEL")', action)
+        self.assertIn('radar_args+=("--action=$INPUT_ACTION")', action)
+        self.assertIn('radar_args+=("--min-score=$INPUT_MIN_SCORE")', action)
         self.assertIn('summary-json<<MAINTAINER_RADAR_SUMMARY', action)
         self.assertIn('"average-score": "average_score"', action)
         self.assertIn('"merge-conflicts": "merge_conflicts"', action)
@@ -122,7 +122,7 @@ class ActionMetadataTests(unittest.TestCase):
         self.assertIn('html) default_output="review-plan.html"', action)
         self.assertIn('json) default_output="review-plan.json"', action)
         self.assertIn('output="${INPUT_OUTPUT:-$default_output}"', action)
-        self.assertIn('echo "report-path=$output" >> "$GITHUB_OUTPUT"', action)
+        self.assertIn("printf 'report-path=%s\\n' \"$output\" >> \"$GITHUB_OUTPUT\"", action)
 
     def test_action_docs_cover_inputs_and_outputs(self) -> None:
         docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")

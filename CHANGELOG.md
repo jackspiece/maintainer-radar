@@ -2,6 +2,20 @@
 
 ## Unreleased (0.21.0)
 
+- Serialize custom workflow Action references as YAML strings, preserving
+  Unicode separators, quotes, and expression-like text without changing
+  ordinary reference output.
+
+- Handle leading-hyphen Action labels, config paths, and report paths literally.
+  Reject CR/LF report paths before side effects so Action outputs remain valid.
+  Workflow generation now rejects YAML-forbidden characters with clear errors.
+
+- Add opt-in JSON snapshots with effective scoring config, version, analysis
+  time, capture settings, and observed/output counts. Offline comparisons show
+  setting differences or unknown legacy provenance without claiming equivalent
+  coverage. Default JSON arrays remain unchanged; local paths and environment
+  data are not recorded.
+
 - Add local search and action filters to full, ungrouped HTML reports, with
   visible-row counts, keyboard-friendly reset, and a no-JavaScript fallback.
   Filtering does not change queue totals, scores, or other report formats.

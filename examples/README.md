@@ -70,3 +70,24 @@ PYTHONPATH=src python -m maintainer_radar compare \
 `output/sample-comparison.md` and `output/sample-comparison.json` are generated
 from that pair by the same examples script. See the [comparison guide](../docs/snapshot-comparison.md)
 for accepted inputs and the limits on conclusions from missing PRs or changed scores.
+
+
+## Capture settings explain a score change
+
+The unreleased `--snapshot` option can retain the settings used for a full JSON
+queue. The same raw sample and fixed time are analyzed once with defaults and
+once with `snapshots/lower-threshold-config.json`, which changes only
+`large_diff_lines` from 500 to 50:
+
+- `output/sample-snapshot.json`
+- `output/sample-snapshot-lower-threshold.json`
+- `output/sample-provenance-comparison.md`
+- `output/sample-provenance-comparison.json`
+
+The comparison flags `config.large_diff_lines` and shows the saved observation
+changes for PR #42. No PR code changed in this controlled example. Matching
+settings still would not prove complete or equivalent coverage on a real queue.
+All four artifacts are regenerated and checked by the same examples script;
+comparisons read its fresh captures rather than previously committed output.
+See the [capture settings guide](../docs/snapshot-provenance.md) for commands and
+schema details.
