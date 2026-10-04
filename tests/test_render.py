@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import csv
+from io import StringIO
 import json
 import unittest
 
@@ -683,6 +685,24 @@ class RenderTests(unittest.TestCase):
 
         self.assertTrue(output.startswith("comment\n"))
         self.assertIn('"Thanks.\nPlease add tests."', output)
+
+    def test_csv_preserves_all_field_newlines_and_lf_record_terminators(self) -> None:
+        for value in ("left\rright", "left\nright", "left\r\nright", "ends\r", "ends\n",
+                      'comma, quote" and CR\rLF\n'):
+            with self.subTest(value=value):
+                comment = render_comment_csv(value)
+                self.assertEqual(list(csv.DictReader(StringIO(comment, newline=""))),
+                                 [{"comment": value}])
+                expected = 'comment\n"' + value.replace('"', '""') + '"\n'
+                self.assertEqual(comment, expected)
+                items = [{"number": 1, "title": value, "author": value, "next_step": value},
+                         {"number": 2, "title": "second row"}]
+                rows = list(csv.DictReader(StringIO(render_csv(items), newline="")))
+                self.assertEqual(len(rows), 2)
+                for field in ("title", "author", "next_step"):
+                    self.assertEqual(rows[0][field], value)
+                self.assertEqual(rows[1]["title"], "second row")
+                self.assertEqual(items[0]["title"], value)
 
     def test_html_output_contains_summary_and_escapes_content(self) -> None:
         output = render_html(

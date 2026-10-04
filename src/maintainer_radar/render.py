@@ -938,49 +938,46 @@ def render_review_plan_json(analyses: list[dict[str, Any]], budget_minutes: int)
     return json.dumps(payload, indent=2) + "\n"
 
 
+def _csv_row(values: list[Any]) -> str:
+    output = StringIO(newline="")
+    # CRLF makes Python 3.10 quote both CR and LF inside fields. Remove only the
+    # record terminator's CR so our established LF output and field data survive.
+    csv.writer(output, lineterminator="\r\n").writerow(values)
+    return output.getvalue()[:-2] + "\n"
+
+
 def render_csv(analyses: list[dict[str, Any]]) -> str:
-    output = StringIO()
-    writer = csv.DictWriter(output, fieldnames=CSV_FIELDS, lineterminator="\n")
-    writer.writeheader()
+    output = [_csv_row(CSV_FIELDS)]
     for item in analyses:
-        writer.writerow(
-            {
-                "number": item.get("number"),
-                "title": item.get("title") or "",
-                "author": item.get("author") or "",
-                "action": item.get("action") or "",
-                "next_step": _next_step(item),
-                "reviewability": item.get("reviewability", ""),
-                "risk": item.get("risk", ""),
-                "stale_days": item.get("stale_days", ""),
-                "changed_files": item.get("changed_files", ""),
-                "additions": item.get("additions", ""),
-                "deletions": item.get("deletions", ""),
-                "labels": _join_csv_value(item.get("labels")),
-                "signals": _join_csv_value(item.get("signals")),
-                "flags": _join_csv_value(item.get("flags")),
-                "score_breakdown": _join_score_breakdown(item.get("score_breakdown")),
-                "url": item.get("url") or "",
-            }
-        )
-    return output.getvalue()
+        row = {
+            "number": item.get("number"),
+            "title": item.get("title") or "",
+            "author": item.get("author") or "",
+            "action": item.get("action") or "",
+            "next_step": _next_step(item),
+            "reviewability": item.get("reviewability", ""),
+            "risk": item.get("risk", ""),
+            "stale_days": item.get("stale_days", ""),
+            "changed_files": item.get("changed_files", ""),
+            "additions": item.get("additions", ""),
+            "deletions": item.get("deletions", ""),
+            "labels": _join_csv_value(item.get("labels")),
+            "signals": _join_csv_value(item.get("signals")),
+            "flags": _join_csv_value(item.get("flags")),
+            "score_breakdown": _join_score_breakdown(item.get("score_breakdown")),
+            "url": item.get("url") or "",
+        }
+        output.append(_csv_row([row[field] for field in CSV_FIELDS]))
+    return "".join(output)
 
 
 def render_summary_csv(analyses: list[dict[str, Any]]) -> str:
     summary = summarize_report(analyses)
-    output = StringIO()
-    writer = csv.DictWriter(output, fieldnames=list(summary), lineterminator="\n")
-    writer.writeheader()
-    writer.writerow(summary)
-    return output.getvalue()
+    return _csv_row(list(summary)) + _csv_row(list(summary.values()))
 
 
 def render_comment_csv(comment: str) -> str:
-    output = StringIO()
-    writer = csv.DictWriter(output, fieldnames=["comment"], lineterminator="\n")
-    writer.writeheader()
-    writer.writerow({"comment": comment})
-    return output.getvalue()
+    return _csv_row(["comment"]) + _csv_row([comment])
 
 
 def render_html(
