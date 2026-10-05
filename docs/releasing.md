@@ -25,7 +25,7 @@ python -m build
 python -m twine check --strict dist/*
 ```
 
-The test suite checks all eight committed offline reports against the current
+The test suite checks all twelve committed offline reports against the current
 CLI. When scoring or rendering changes intentionally, run
 `python scripts/generate_examples.py` and review the output diff.
 

@@ -13,6 +13,7 @@ from typing import Any
 from urllib.parse import quote, urlsplit
 
 from .normalize import normalize_items
+from .snapshot import PROVENANCE_LIMITATION, compare_provenance, snapshot_parts
 
 MAX_SNAPSHOT_BYTES = 16 * 1024 * 1024
 MAX_SNAPSHOT_RECORDS = 10_000
@@ -50,7 +51,7 @@ def _unique_keys(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
     return result
 
 
-def load_snapshot(path: str | Path) -> list[dict[str, Any]]:
+def load_snapshot(path: str | Path) -> list[dict[str, Any]] | dict[str, Any]:
     """Bound input reads and fully validate before returning any observations."""
     source = Path(path)
     if not source.is_file():
@@ -64,7 +65,8 @@ def load_snapshot(path: str | Path) -> list[dict[str, Any]]:
             payload.decode("utf-8"), parse_constant=_reject_constant,
             parse_float=_finite_float, object_pairs_hook=_unique_keys,
         )
-        return validate_snapshot(data)
+        records = validate_snapshot(data)
+        return {**data, "items": records} if isinstance(data, dict) else records
     except (ValueError, RecursionError) as exc:
         raise ValueError(f"invalid snapshot {source}: {exc}") from exc
 
@@ -116,8 +118,7 @@ def _identity(value: Any, number: int) -> str:
 
 def validate_snapshot(data: Any) -> list[dict[str, Any]]:
     """Validate the documented full-queue schema and select compared fields."""
-    if not isinstance(data, list):
-        raise ValueError("expected a full Radar queue JSON array, not a summary, review plan, or raw export")
+    data, _ = snapshot_parts(data)
     if len(data) > MAX_SNAPSHOT_RECORDS:
         raise ValueError(f"snapshot exceeds {MAX_SNAPSHOT_RECORDS} pull requests")
     items = normalize_items(data, source="github")
@@ -154,6 +155,8 @@ def validate_snapshot(data: Any) -> list[dict[str, Any]]:
 
 def compare_snapshots(before: Any, after: Any) -> dict[str, Any]:
     """Compare supported values; input ordering never changes report ordering."""
+    _, before_provenance = snapshot_parts(before)
+    _, after_provenance = snapshot_parts(after)
     old = {item["url"]: item for item in validate_snapshot(before)}
     new = {item["url"]: item for item in validate_snapshot(after)}
     added = [new[url] for url in sorted(new.keys() - old.keys())]
@@ -170,7 +173,7 @@ def compare_snapshots(before: Any, after: Any) -> dict[str, Any]:
                             "before": old[url], "after": new[url], "changes": changes})
         else:
             unchanged.append(new[url])
-    return {
+    report = {
         "schema_version": 1,
         "comparison_fields": list(COMPARISON_FIELDS),
         "limitations": list(LIMITATIONS),
@@ -181,6 +184,10 @@ def compare_snapshots(before: Any, after: Any) -> dict[str, Any]:
         "changed": changed,
         "unchanged": unchanged,
     }
+    if before_provenance is not None or after_provenance is not None:
+        report["provenance"] = compare_provenance(before_provenance, after_provenance)
+        report["limitations"] = [PROVENANCE_LIMITATION, *LIMITATIONS[1:]]
+    return report
 
 
 def _markdown_text(value: str) -> str:
@@ -220,7 +227,28 @@ def render_comparison(report: dict[str, Any], fmt: str = "markdown") -> str:
         f"Newly observed: {summary['newly_observed']}. No longer observed: {summary['no_longer_observed']}. "
         f"Changed: {summary['changed']}. Unchanged in compared fields: {summary['unchanged']}.", "",
     ]
-    lines.extend(f"- {text}" for text in LIMITATIONS)
+    provenance = report.get("provenance")
+    if provenance is not None:
+        lines.extend(["## Capture settings", ""])
+        messages = {
+            "recorded-settings-match": "Recorded settings match. This does not prove comparable coverage.",
+            "recorded-settings-differ": "Recorded settings differ. Interpret score and queue changes with caution.",
+            "unknown": "Capture comparability is unknown: one input is a legacy array without provenance.",
+        }
+        lines.extend([messages[provenance["status"]], ""])
+        for label in ("before", "after"):
+            context = provenance[label]
+            if context is not None:
+                lines.append(f"- {label.title()}: Radar {_display(context['radar_version'])}; "
+                             f"analysis time {_display(context['analysis_time'])}; "
+                             f"observed {context['counts']['observed']}, emitted {context['counts']['emitted']}.")
+        lines.append("")
+        if provenance["differences"]:
+            lines.extend(["| Setting | Before | After |", "| --- | --- | --- |"])
+            for change in provenance["differences"]:
+                lines.append(f"| {change['field']} | {_display(change['before'])} | {_display(change['after'])} |")
+            lines.append("")
+    lines.extend(f"- {text}" for text in report["limitations"])
     lines.extend(["", "Compared fields: " + ", ".join(COMPARISON_FIELDS) + ".", ""])
     for key, heading in (("newly_observed", "Newly observed"), ("no_longer_observed", "No longer observed")):
         lines.extend([f"## {heading}", ""])

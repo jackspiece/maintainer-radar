@@ -14,7 +14,7 @@ inputs:
     required: false
     default: markdown
   output:
-    description: Output file path for the report artifact. Defaults to maintainer-radar with the selected format extension.
+    description: Single-line output file path (no CR or LF) for the report artifact. Defaults to maintainer-radar with the selected format extension.
     required: false
     default: ""
   limit:
@@ -234,42 +234,49 @@ runs:
           esac
         fi
         output="${INPUT_OUTPUT:-$default_output}"
-        mkdir -p "$(dirname "$output")"
-        echo "report-path=$output" >> "$GITHUB_OUTPUT"
+        # Keep the report path within one GitHub environment-file record.
+        case "$output" in
+          *$'\n'*|*$'\r'*)
+            echo "output must be a single-line file path (no CR or LF)" >&2
+            exit 2
+            ;;
+        esac
+        mkdir -p -- "$(dirname -- "$output")"
+        printf 'report-path=%s\n' "$output" >> "$GITHUB_OUTPUT"
 
         radar_args=(
-          --limit "$INPUT_LIMIT"
-          --sort "$INPUT_SORT"
+          "--limit=$INPUT_LIMIT"
+          "--sort=$INPUT_SORT"
         )
         if [ "$INPUT_HYDRATE" = "true" ]; then
           radar_args+=(--hydrate)
         fi
         if [ -n "$INPUT_TOP" ]; then
-          radar_args+=(--top "$INPUT_TOP")
+          radar_args+=("--top=$INPUT_TOP")
         fi
         if [ -n "$INPUT_CONFIG" ]; then
-          radar_args+=(--config "$INPUT_CONFIG")
+          radar_args+=("--config=$INPUT_CONFIG")
         fi
         if [ -n "$INPUT_LABEL" ]; then
-          radar_args+=(--label "$INPUT_LABEL")
+          radar_args+=("--label=$INPUT_LABEL")
         fi
         if [ -n "$INPUT_AUTHOR" ]; then
-          radar_args+=(--author "$INPUT_AUTHOR")
+          radar_args+=("--author=$INPUT_AUTHOR")
         fi
         if [ -n "$INPUT_STALE_DAYS" ]; then
-          radar_args+=(--stale-days "$INPUT_STALE_DAYS")
+          radar_args+=("--stale-days=$INPUT_STALE_DAYS")
         fi
         if [ -n "$INPUT_UPDATED_SINCE" ]; then
-          radar_args+=(--updated-since "$INPUT_UPDATED_SINCE")
+          radar_args+=("--updated-since=$INPUT_UPDATED_SINCE")
         fi
         if [ -n "$INPUT_ACTION" ]; then
-          radar_args+=(--action "$INPUT_ACTION")
+          radar_args+=("--action=$INPUT_ACTION")
         fi
         if [ -n "$INPUT_MIN_SCORE" ]; then
-          radar_args+=(--min-score "$INPUT_MIN_SCORE")
+          radar_args+=("--min-score=$INPUT_MIN_SCORE")
         fi
         if [ -n "$INPUT_MAX_RISK" ]; then
-          radar_args+=(--max-risk "$INPUT_MAX_RISK")
+          radar_args+=("--max-risk=$INPUT_MAX_RISK")
         fi
 
         # Scan the queue exactly once. Every report shape, summary output,

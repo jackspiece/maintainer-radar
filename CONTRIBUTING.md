@@ -111,3 +111,18 @@ If Marked is installed outside the checkout, set `MARKED_MODULE` to its absolute
 ESM module path. The two parser checks skip with an explicit reason when their
 optional tools are missing. Both parsers exercise report tables, CLI review
 plans, browser-demo exports, literal titles, and exact link destinations.
+
+## Workflow YAML Regression Checks
+
+Install `PyYAML` for full generated-workflow parsing and action-reference
+round-trip checks:
+
+```bash
+python -m pip install PyYAML
+PYTHONPATH=src python -m unittest discover -s tests -p test_workflow_action_ref.py -v
+```
+
+These parser checks skip explicitly if PyYAML is unavailable. The same file's
+dependency-free tests always check exact scalar escaping, JSON string
+round-trips, ordinary reference output, and CLI output. PyYAML is a test-only
+dependency; workflow generation remains dependency-free.

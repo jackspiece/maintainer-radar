@@ -13,6 +13,10 @@ NOW = "2026-06-01T00:00:00Z"
 REPORTS = {
     "sample-report.md": ["--format", "markdown"],
     "sample-report.json": ["--format", "json"],
+    "sample-snapshot.json": ["--format", "json", "--snapshot"],
+    "sample-snapshot-lower-threshold.json": [
+        "--format", "json", "--snapshot", "--config", str(ROOT / "examples/snapshots/lower-threshold-config.json"),
+    ],
     "sample-report.csv": ["--format", "csv"],
     "sample-report.html": ["--format", "html"],
     "sample-review-plan-15.md": ["--review-plan-minutes", "15"],
@@ -37,11 +41,19 @@ def main() -> int:
     env = {**os.environ, "PYTHONPATH": str(ROOT / "src"), "PYTHONIOENCODING": "utf-8"}
     # A local .maintainer-radar.json must not change checked-in sample output.
     with TemporaryDirectory() as workdir:
+        for fmt, extension in (("markdown", "md"), ("json", "json")):
+            commands[f"sample-provenance-comparison.{extension}"] = [
+                "compare", str(Path(workdir) / "sample-snapshot.json"),
+                str(Path(workdir) / "sample-snapshot-lower-threshold.json"), "--format", fmt,
+            ]
         for filename, command in commands.items():
             result = subprocess.run(
                 [sys.executable, "-m", "maintainer_radar", *command],
                 cwd=workdir, env=env, check=True, capture_output=True, text=True, encoding="utf-8",
             )
+            # Chained comparison examples always read this run's fresh captures,
+            # including in --check mode; never depend on stale committed output.
+            (Path(workdir) / filename).write_text(result.stdout, encoding="utf-8")
             target = ROOT / "examples/output" / filename
             if args.check:
                 if not target.exists() or target.read_text(encoding="utf-8") != result.stdout:

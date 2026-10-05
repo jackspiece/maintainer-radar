@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import re
 from typing import Final
 
 REPORT_EXTENSIONS: Final[dict[str, str]] = {
@@ -78,6 +80,7 @@ def render_github_action_workflow(
     clean_author = _clean_single_line(author, "--author")
     clean_updated_since = _clean_single_line(updated_since, "--updated-since")
     clean_action_ref = _clean_single_line(action_ref, "--action-ref")
+    _validate_yaml_characters(schedule, "--schedule")
     clean_schedule = schedule.strip()
     if not clean_schedule or "\n" in clean_schedule or "\r" in clean_schedule:
         raise ValueError("--schedule must be a single-line cron expression")
@@ -96,7 +99,7 @@ def render_github_action_workflow(
         if is_review_plan
         else f"Build {report_format} report"
     )
-    action = clean_action_ref or DEFAULT_ACTION_REF
+    action = _yaml_action_reference(clean_action_ref or DEFAULT_ACTION_REF)
     checkout = "      - uses: actions/checkout@v7\n" if clean_config else ""
     filter_inputs = "".join(
         [
@@ -154,16 +157,49 @@ jobs:
 
 
 def _clean_single_line(value: str | None, option_name: str) -> str:
+    _validate_yaml_characters(value or "", option_name)
     cleaned = (value or "").strip()
     if "\n" in cleaned or "\r" in cleaned:
         raise ValueError(f"{option_name} must be a single-line value")
     return cleaned
 
 
+def _validate_yaml_characters(value: str, option_name: str) -> None:
+    # YAML 1.2 c-printable: tabs, CR/LF, and printable Unicode scalar values.
+    # Validate before stripping so forbidden controls cannot disappear silently.
+    for character in value:
+        code = ord(character)
+        if not (
+            code in {0x09, 0x0A, 0x0D, 0x85}
+            or 0x20 <= code <= 0x7E
+            or 0xA0 <= code <= 0xD7FF
+            or 0xE000 <= code <= 0xFFFD
+            or 0x10000 <= code <= 0x10FFFF
+        ):
+            raise ValueError(f"{option_name} contains unsupported YAML character U+{code:04X}")
+
+
 def _escape_yaml_value(value: str) -> str:
     # Escape backslashes before quotes so a value like foo\" cannot break
     # out of the double-quoted YAML scalar.
     return value.replace("\\", "\\\\").replace('"', '\\"')
+
+
+def _yaml_action_reference(value: str) -> str:
+    # Keep ordinary repository, local-path, and Docker refs byte-compatible.
+    # This conservative plain-scalar subset cannot be YAML syntax or a typed
+    # value: it contains / or @, no whitespace/active indicators, and no final colon.
+    if (
+        re.fullmatch(r"[\w./-][\w./@:+-]*", value)
+        and ("/" in value or "@" in value)
+        and not value.endswith(":")
+    ):
+        return value
+    # JSON string quoting is also YAML double quoting. Keep non-BMP Unicode
+    # literal (YAML does not combine JSON surrogate-pair escapes), but escape
+    # these separators explicitly so YAML 1.1 parsers cannot fold/split them.
+    quoted = json.dumps(value, ensure_ascii=False)
+    return quoted.replace("\x85", "\\u0085").replace("\u2028", "\\u2028").replace("\u2029", "\\u2029")
 
 
 def _yaml_input(name: str, value: str | int | None) -> str:

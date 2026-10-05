@@ -9,7 +9,8 @@ import re
 import sys
 from typing import Any, Callable
 
-from .compare import compare_snapshots, load_snapshot, render_comparison
+from . import __version__
+from .compare import MAX_SNAPSHOT_BYTES, compare_snapshots, load_snapshot, render_comparison, validate_snapshot
 from .config import CONFIG_PROFILES, load_config, render_config_profile
 from .github import GitHubCliError, list_repo_prs, search_author_prs, view_pr
 from .normalize import normalize_items
@@ -31,6 +32,7 @@ from .render import (
     summarize_report,
 )
 from .scoring import analyze_pr, days_since, parse_github_datetime
+from .snapshot import FILTER_FIELDS, SNAPSHOT_KIND, validate_provenance
 from .workflow import render_github_action_workflow
 
 ACTION_SLUGS = {
@@ -291,6 +293,46 @@ def _number_value(item: dict[str, Any]) -> int:
         return 0
 
 
+def _capture_provenance(
+    args: argparse.Namespace, config: dict[str, Any], now: datetime, observed: int, emitted: int,
+) -> dict[str, Any]:
+    offline = args.command == "from-json"
+    try:
+        analysis_time = now.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
+    except OverflowError as exc:
+        raise ValueError("--now is outside the supported UTC date range") from exc
+    return validate_provenance({
+        "radar_version": __version__,
+        "analysis_time": analysis_time,
+        "config": config,
+        "capture": {
+            "command": args.command,
+            "source": args.source if offline else "github",
+            "repository": _normalize_repository_arg(args.repository) if args.command == "repo" else None,
+            "author": args.username if args.command == "author" else None,
+            "state": None if offline else args.state,
+            "limit": None if offline else args.limit,
+            "hydrate": None if offline else args.hydrate,
+            "filters": {key: getattr(args, key, None) for key in FILTER_FIELDS},
+            "sort": args.sort,
+            "top": args.top,
+        },
+        "counts": {"observed": observed, "emitted": emitted},
+    }, emitted)
+
+
+def _validate_snapshot_options(args: argparse.Namespace) -> None:
+    if args.format != "json":
+        raise ValueError("--snapshot requires --format json")
+    for option in ("summary_only", "detail", "group_by", "review_plan_minutes"):
+        value = getattr(args, option, None)
+        if value is not None and value is not False:
+            raise ValueError(f"--snapshot cannot be combined with --{option.replace('_', '-')}")
+    updated_since = getattr(args, "updated_since", None)
+    if updated_since and parse_github_datetime(updated_since) is None:
+        raise ValueError("--updated-since must be an ISO date, for example 2026-06-01")
+
+
 def _emit(
     analyses: list[dict[str, Any]],
     fmt: str,
@@ -299,7 +341,16 @@ def _emit(
     summary_only: bool = False,
     group_by: str | None = None,
     review_plan_minutes: int | None = None,
+    provenance: dict[str, Any] | None = None,
 ) -> None:
+    if provenance is not None:
+        snapshot = {"kind": SNAPSHOT_KIND, "schema_version": 1, "provenance": provenance, "items": analyses}
+        validate_snapshot(snapshot)
+        output = json.dumps(snapshot, indent=2, allow_nan=False) + "\n"
+        if len(output.encode("utf-8")) > MAX_SNAPSHOT_BYTES:
+            raise ValueError(f"snapshot exceeds {MAX_SNAPSHOT_BYTES} bytes")
+        print(output, end="")
+        return
     if review_plan_minutes is not None:
         if summary_only:
             raise ValueError("--review-plan-minutes cannot be combined with --summary-only")
@@ -437,12 +488,19 @@ def build_parser() -> argparse.ArgumentParser:
             help="Render a Markdown, HTML, or JSON review-session plan for this many maintainer minutes.",
         )
 
+    def add_snapshot_argument(target: argparse.ArgumentParser) -> None:
+        target.add_argument(
+            "--snapshot", action="store_true",
+            help="Wrap a full JSON queue in capture provenance for offline comparison (requires --format json).",
+        )
+
     add_format_argument(parser, default="markdown")
     sub = parser.add_subparsers(dest="command", required=True)
 
     repo = sub.add_parser("repo", help="Analyze pull requests in a repository.")
     add_format_argument(repo, default=argparse.SUPPRESS)
     add_config_argument(repo)
+    add_snapshot_argument(repo)
     add_now_argument(repo)
     repo.add_argument("repository", help="Repository in owner/name form or a GitHub repository URL.")
     repo.add_argument("--state", default="open", choices=["open", "closed", "all"])
@@ -506,6 +564,7 @@ def build_parser() -> argparse.ArgumentParser:
     author = sub.add_parser("author", help="Analyze pull requests by author.")
     add_format_argument(author, default=argparse.SUPPRESS)
     add_config_argument(author)
+    add_snapshot_argument(author)
     add_now_argument(author)
     author.add_argument("username", help="GitHub username.")
     author.add_argument("--state", default="open", choices=["open", "closed"])
@@ -527,6 +586,7 @@ def build_parser() -> argparse.ArgumentParser:
     from_json = sub.add_parser("from-json", help="Analyze offline JSON fixture data.")
     add_format_argument(from_json, default=argparse.SUPPRESS)
     add_config_argument(from_json)
+    add_snapshot_argument(from_json)
     add_now_argument(from_json)
     from_json.add_argument("path", help="Path to JSON file, or - for stdin.")
     from_json.add_argument(
@@ -799,11 +859,20 @@ def main(argv: list[str] | None = None) -> int:
             print(f"Wrote {workflow_path}")
             return 0
 
+        snapshot_enabled = getattr(args, "snapshot", False)
+        if snapshot_enabled:
+            _validate_snapshot_options(args)
         config = load_config(getattr(args, "config", None))
         now = _parse_now(getattr(args, "now", None))
+        if snapshot_enabled:
+            # Use exactly this clock for filtering, scoring, and recorded provenance.
+            now = now or datetime.now(timezone.utc)
+            _capture_provenance(args, config, now, 0, 0)
+        observed = 0
         if args.command == "repo":
             repository = _normalize_repository_arg(args.repository)
             prs = list_repo_prs(repository, state=args.state, limit=args.limit)
+            observed = len(prs)
             prs = filter_prs(
                 prs,
                 label=args.label,
@@ -829,6 +898,8 @@ def main(argv: list[str] | None = None) -> int:
                 summary_only=args.summary_only,
                 group_by=args.group_by,
                 review_plan_minutes=args.review_plan_minutes,
+                provenance=_capture_provenance(args, config, now, observed, len(analyses))
+                if snapshot_enabled and now is not None else None,
             )
         elif args.command == "recommend":
             repository = _normalize_repository_arg(args.repository)
@@ -863,6 +934,7 @@ def main(argv: list[str] | None = None) -> int:
                 _emit([analysis], args.format, detail=True)
         elif args.command == "author":
             prs = search_author_prs(args.username, state=args.state, limit=args.limit)
+            observed = len(prs)
             if args.hydrate:
                 prs = hydrate_prs(prs, viewer=view_pr)
             analyses = [analyze_pr(pr, config=config, now=now) for pr in prs]
@@ -880,9 +952,12 @@ def main(argv: list[str] | None = None) -> int:
                 summary_only=args.summary_only,
                 group_by=args.group_by,
                 review_plan_minutes=args.review_plan_minutes,
+                provenance=_capture_provenance(args, config, now, observed, len(analyses))
+                if snapshot_enabled and now is not None else None,
             )
         elif args.command == "from-json":
             prs = _as_pr_list(_load_json(args.path), source=args.source)
+            observed = len(prs)
             detail = bool(args.detail and len(prs) == 1)
             analyses = [analyze_pr(pr, config=config, now=now) for pr in prs]
             analyses = filter_analyses(
@@ -900,6 +975,8 @@ def main(argv: list[str] | None = None) -> int:
                 summary_only=args.summary_only,
                 group_by=args.group_by,
                 review_plan_minutes=args.review_plan_minutes,
+                provenance=_capture_provenance(args, config, now, observed, len(analyses))
+                if snapshot_enabled and now is not None else None,
             )
         else:
             parser.error("unknown command")

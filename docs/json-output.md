@@ -41,6 +41,17 @@ Each score breakdown entry has:
 | `risk_delta` | integer | Risk change from that heuristic |
 | `kind` | string | `signal` or `flag` |
 
+## Opt-in capture provenance (unreleased source)
+
+`repo`, `author`, and `from-json` support `--format json --snapshot` for full
+queue reports. This emits a versioned object with `items` and `provenance`,
+including the effective config and capture settings. Ordinary `--format json`
+continues to emit the same array. Use `compare` with either format; existing
+array consumers should keep using the default or select the envelope's `items`.
+
+See [snapshot capture settings](snapshot-provenance.md) for the schema, a
+reproducible config-change example, privacy notes, and compatibility limits.
+
 ## Summary Output
 
 ```bash
