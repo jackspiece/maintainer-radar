@@ -49,7 +49,7 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-      - uses: JackSpiece/maintainer-radar@v0.20.0
+      - uses: JackSpiece/maintainer-radar@v0.21.0
         id: radar
         env:
           GH_TOKEN: ${{ github.token }}
@@ -92,7 +92,7 @@ config.
 Install from GitHub if you want to test locally:
 
 ```bash
-python -m pip install "git+https://github.com/JackSpiece/maintainer-radar.git@v0.20.0"
+python -m pip install "git+https://github.com/JackSpiece/maintainer-radar.git@v0.21.0"
 ```
 
 Then paste a repository URL:

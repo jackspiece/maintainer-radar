@@ -87,7 +87,7 @@ decides attention level for stale PRs:
 
 {% raw %}
 ```yaml
-- uses: JackSpiece/maintainer-radar@v0.20.0
+- uses: JackSpiece/maintainer-radar@v0.21.0
   id: radar
   env:
     GH_TOKEN: ${{ github.token }}

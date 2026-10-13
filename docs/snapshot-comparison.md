@@ -5,8 +5,7 @@ It reads full analyzed queue JSON arrays or opt-in provenance snapshots, matches
 and prints a deterministic Markdown or JSON comparison. It does not contact a
 forge, re-score a PR, post a comment, or modify the input files.
 
-This command is part of the unreleased source checkout. The published v0.20.0
-installation shown in the main quickstart does not include it yet.
+This command ships in v0.21.0, the version installed by the main quickstart.
 
 ## Try the fictional example
 

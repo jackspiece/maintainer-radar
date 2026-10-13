@@ -57,7 +57,7 @@ results, incomplete-file caveats, and what the estimates do not establish.
 
 ## Offline snapshot comparison
 
-The unreleased `compare` command uses the fictional analyzed queue snapshots
+The `compare` command uses the fictional analyzed queue snapshots
 `snapshots/before.json` and `snapshots/after.json`. They cover a changed CI/action
 observation, one newly observed PR, one no longer observed PR, and one unchanged
 PR. These are saved analyses, unlike the raw fixture `sample-prs.json`.
@@ -74,7 +74,7 @@ for accepted inputs and the limits on conclusions from missing PRs or changed sc
 
 ## Capture settings explain a score change
 
-The unreleased `--snapshot` option can retain the settings used for a full JSON
+The `--snapshot` option can retain the settings used for a full JSON
 queue. The same raw sample and fixed time are analyzed once with defaults and
 once with `snapshots/lower-threshold-config.json`, which changes only
 `large_diff_lines` from 500 to 50:

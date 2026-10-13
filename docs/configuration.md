@@ -84,7 +84,7 @@ steps:
   - uses: actions/setup-python@v7
     with:
       python-version: "3.12"
-  - uses: JackSpiece/maintainer-radar@v0.20.0
+  - uses: JackSpiece/maintainer-radar@v0.21.0
     env:
       GH_TOKEN: ${{ github.token }}
     with:

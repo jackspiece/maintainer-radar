@@ -4,9 +4,9 @@ The package version is defined only in `src/maintainer_radar/__init__.py`.
 Use stable `X.Y.Z` versions with ASCII digits and no leading zeros in any
 component (for example, `0.21.0`, not `0.21.00`). This keeps the source version
 and tag identical to the version recorded in built distributions.
-The current development batch is **0.21.0**, still marked **Unreleased**.
-Installation examples and generated workflows stay on the published
-**v0.20.0** until a new tag is actually available.
+The latest published release is **v0.21.0**. Installation examples and
+generated workflows use it, and move to a newer tag only after that tag's
+release workflow passes.
 
 ## Prepare and verify
 

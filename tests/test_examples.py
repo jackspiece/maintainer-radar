@@ -7,7 +7,7 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
-PUBLISHED_ACTION_VERSION = "v0.20.0"
+PUBLISHED_ACTION_VERSION = "v0.21.0"
 
 
 class ExampleTests(unittest.TestCase):

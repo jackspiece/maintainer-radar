@@ -41,7 +41,7 @@ Each score breakdown entry has:
 | `risk_delta` | integer | Risk change from that heuristic |
 | `kind` | string | `signal` or `flag` |
 
-## Opt-in capture provenance (unreleased source)
+## Opt-in capture provenance
 
 `repo`, `author`, and `from-json` support `--format json --snapshot` for full
 queue reports. This emits a versioned object with `items` and `provenance`,

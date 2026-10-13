@@ -23,10 +23,10 @@ class MetadataTests(unittest.TestCase):
     def test_readme_quick_start_leads_with_github_action(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
 
-        action_ref = "JackSpiece/maintainer-radar@v0.20.0"
+        action_ref = "JackSpiece/maintainer-radar@v0.21.0"
         source_install = (
             'python -m pip install '
-            '"git+https://github.com/JackSpiece/maintainer-radar.git@v0.20.0"'
+            '"git+https://github.com/JackSpiece/maintainer-radar.git@v0.21.0"'
         )
 
         self.assertIn("## Quick Start", readme)

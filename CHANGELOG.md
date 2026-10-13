@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Point install examples, docs, and generated workflows (`DEFAULT_ACTION_REF`)
+  at the published v0.21.0, and drop "unreleased" labels from features that
+  shipped in it.
+
 ## 0.21.0
 
 - Serialize custom workflow Action references as YAML strings, preserving
