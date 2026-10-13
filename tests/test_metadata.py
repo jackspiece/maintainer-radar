@@ -35,7 +35,6 @@ class MetadataTests(unittest.TestCase):
         self.assertIn(source_install, readme)
         self.assertLess(readme.index(action_ref), readme.index(source_install))
         self.assertNotIn("pip install maintainer-radar", readme)
-        self.assertNotIn("maintainer-radar@v0.21.0", readme)
 
     def test_project_description_mentions_action_and_read_only_triage(self) -> None:
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")

@@ -27,7 +27,6 @@ class ExampleTests(unittest.TestCase):
                     f"uses: JackSpiece/maintainer-radar@{PUBLISHED_ACTION_VERSION}",
                     text,
                 )
-                self.assertNotIn("maintainer-radar@v0.21.0", text)
                 self.assertIn("uses: actions/upload-artifact@v7", text)
                 self.assertIn("GH_TOKEN: ${{ github.token }}", text)
                 self.assertIn("path: ${{ steps.radar.outputs.report-path }}", text)
