@@ -24,7 +24,7 @@ WORKFLOW_ACTION_FILTERS: Final[set[str]] = {
 }
 ACTION_REPOSITORY: Final[str] = "JackSpiece/maintainer-radar"
 # Update only after publishing a release; development versions may have no tag.
-DEFAULT_ACTION_REF: Final[str] = f"{ACTION_REPOSITORY}@v0.20.0"
+DEFAULT_ACTION_REF: Final[str] = f"{ACTION_REPOSITORY}@v0.21.0"
 
 
 def render_github_action_workflow(

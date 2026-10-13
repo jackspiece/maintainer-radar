@@ -1,13 +1,13 @@
 # Save capture settings with a snapshot
 
 A changed score can reflect a different scoring threshold, Radar version,
-filter, or hydration option. The unreleased source adds `--snapshot` to retain
+filter, or hydration option. Version 0.21.0 adds `--snapshot` to retain
 these settings alongside a full JSON queue, so a later comparison can show
 known differences rather than leaving you to reconstruct the command.
 
 This is opt-in. Existing `--format json` arrays, summary JSON, review plans,
-GitHub Action output, and browser-demo exports do not change. The published
-v0.20.0 does not include this option or `compare` yet.
+GitHub Action output, and browser-demo exports do not change. This option and
+`compare` ship in v0.21.0.
 
 ## Capture and compare
 

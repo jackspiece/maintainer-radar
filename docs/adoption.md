@@ -65,7 +65,7 @@ jobs:
           python-version: "3.12"
       - name: Build PR report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.20.0
+        uses: JackSpiece/maintainer-radar@v0.21.0
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -95,7 +95,7 @@ worth reviewing now:
 ```yaml
 - name: Build review-ready report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.20.0
+  uses: JackSpiece/maintainer-radar@v0.21.0
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -121,7 +121,7 @@ Use this when maintainers want a concrete plan for a short review block:
 ```yaml
 - name: Build 30 minute review plan
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.20.0
+  uses: JackSpiece/maintainer-radar@v0.21.0
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -150,7 +150,7 @@ Use this when the team needs to clear old contributor threads:
 ```yaml
 - name: Build stale follow-up report
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.20.0
+  uses: JackSpiece/maintainer-radar@v0.21.0
   env:
     GH_TOKEN: ${{ github.token }}
   with:
@@ -176,7 +176,7 @@ author-fixable branch work from normal review work:
 ```yaml
 - name: Build queue brief
   id: radar
-  uses: JackSpiece/maintainer-radar@v0.20.0
+  uses: JackSpiece/maintainer-radar@v0.21.0
   env:
     GH_TOKEN: ${{ github.token }}
   with:

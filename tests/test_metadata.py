@@ -23,10 +23,10 @@ class MetadataTests(unittest.TestCase):
     def test_readme_quick_start_leads_with_github_action(self) -> None:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
 
-        action_ref = "JackSpiece/maintainer-radar@v0.20.0"
+        action_ref = "JackSpiece/maintainer-radar@v0.21.0"
         source_install = (
             'python -m pip install '
-            '"git+https://github.com/JackSpiece/maintainer-radar.git@v0.20.0"'
+            '"git+https://github.com/JackSpiece/maintainer-radar.git@v0.21.0"'
         )
 
         self.assertIn("## Quick Start", readme)
@@ -35,7 +35,6 @@ class MetadataTests(unittest.TestCase):
         self.assertIn(source_install, readme)
         self.assertLess(readme.index(action_ref), readme.index(source_install))
         self.assertNotIn("pip install maintainer-radar", readme)
-        self.assertNotIn("maintainer-radar@v0.21.0", readme)
 
     def test_project_description_mentions_action_and_read_only_triage(self) -> None:
         pyproject = (ROOT / "pyproject.toml").read_text(encoding="utf-8")

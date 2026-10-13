@@ -50,7 +50,7 @@ class PagesAssetTests(unittest.TestCase):
 
         self.assertIn("Two Minute Quickstart", docs)
         self.assertIn("?repo=owner/repo", docs)
-        self.assertIn("JackSpiece/maintainer-radar@v0.20.0", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.21.0", docs)
         self.assertIn("workflow_dispatch", docs)
         self.assertIn("contents: read", docs)
         self.assertIn("pull-requests: read", docs)
@@ -95,7 +95,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("steps.radar.outputs.attention-level != 'quiet'", docs)
         self.assertIn("steps.radar.outputs.attention-level == 'blocked'", docs)
         self.assertIn("stale-days", docs)
-        self.assertIn("JackSpiece/maintainer-radar@v0.20.0", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.21.0", docs)
         self.assertIn("does not approve, reject, merge, label, or comment", docs)
 
     def test_adoption_guide_has_copy_paste_workflows(self) -> None:
@@ -113,7 +113,7 @@ class PagesAssetTests(unittest.TestCase):
         self.assertIn("30 Minute Review Plan", docs)
         self.assertIn("Stale Follow-Up Queue", docs)
         self.assertIn("Merge Readiness Watch", docs)
-        self.assertIn("JackSpiece/maintainer-radar@v0.20.0", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.21.0", docs)
         self.assertIn("review-plan-minutes", docs)
         self.assertIn("merge-conflicts", docs)
         self.assertIn("branch-behind", docs)
@@ -194,7 +194,7 @@ class PagesAssetTests(unittest.TestCase):
     def test_github_action_docs_explain_contract_and_guardrails(self) -> None:
         docs = (ROOT / "docs" / "github-action.md").read_text(encoding="utf-8")
 
-        self.assertIn("JackSpiece/maintainer-radar@v0.20.0", docs)
+        self.assertIn("JackSpiece/maintainer-radar@v0.21.0", docs)
         self.assertIn("report-path", docs)
         self.assertIn("step-summary", docs)
         self.assertIn("maintainer-blocked", docs)

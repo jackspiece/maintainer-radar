@@ -18,7 +18,7 @@ jobs:
           python-version: "3.12"
       - name: Build Markdown report
         id: radar
-        uses: JackSpiece/maintainer-radar@v0.20.0
+        uses: JackSpiece/maintainer-radar@v0.21.0
         env:
           GH_TOKEN: ${{ github.token }}
         with:

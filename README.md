@@ -31,7 +31,7 @@ approve, reject, or merge anything.
 
 To get a report in GitHub, save this as `.github/workflows/maintainer-radar.yml`,
 commit it to your default branch, then run **Maintainer Radar** from the Actions
-tab. The report appears in the run summary. This uses the published `v0.20.0`:
+tab. The report appears in the run summary. This uses the published `v0.21.0`:
 
 ```yaml
 name: Maintainer Radar
@@ -47,7 +47,7 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
-      - uses: JackSpiece/maintainer-radar@v0.20.0
+      - uses: JackSpiece/maintainer-radar@v0.21.0
         env:
           GH_TOKEN: ${{ github.token }}
         with:
@@ -58,7 +58,7 @@ jobs:
 For a local run, install the published source tag from GitHub:
 
 ```bash
-python -m pip install "git+https://github.com/JackSpiece/maintainer-radar.git@v0.20.0"
+python -m pip install "git+https://github.com/JackSpiece/maintainer-radar.git@v0.21.0"
 gh auth login
 maintainer-radar recommend https://github.com/owner/repo/pulls
 ```
@@ -89,9 +89,9 @@ It reads pull request metadata through the GitHub CLI, the GitHub Action token, 
 - editable draft follow-ups that a maintainer can review before posting
 
 Reports are available as Markdown, JSON, CSV, and standalone HTML.
-The unreleased source can also save [capture settings with JSON snapshots](docs/snapshot-provenance.md)
+Version 0.21.0 can also save [capture settings with JSON snapshots](docs/snapshot-provenance.md)
 so offline comparisons call out changed scoring config, filters, or scan options.
-The unreleased source adds local [search and action filters](docs/html-filters.md)
+Version 0.21.0 adds local [search and action filters](docs/html-filters.md)
 to full, ungrouped HTML reports. Filtering changes visible rows without changing
 queue totals or scores, and makes no network requests.
 
@@ -147,9 +147,9 @@ See [GitHub Action usage](docs/github-action.md) and [attention workflows](docs/
 - [Review plans](docs/review-plan.md)
 - [Scoring heuristics](docs/heuristics.md)
 - [Configuration](docs/configuration.md)
-- [Offline snapshot comparison (unreleased source)](docs/snapshot-comparison.md)
-- [Snapshot capture settings (unreleased source)](docs/snapshot-provenance.md)
-- [Local HTML report filters (unreleased source)](docs/html-filters.md)
+- [Offline snapshot comparison](docs/snapshot-comparison.md)
+- [Snapshot capture settings](docs/snapshot-provenance.md)
+- [Local HTML report filters](docs/html-filters.md)
 - [Privacy and permissions](docs/privacy-permissions.md)
 - [Project positioning](docs/positioning.md)
 - [GitLab JSON](docs/gitlab-json.md)
