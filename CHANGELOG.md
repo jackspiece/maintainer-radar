@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased (0.21.0)
+## 0.21.0
 
 - Serialize custom workflow Action references as YAML strings, preserving
   Unicode separators, quotes, and expression-like text without changing
