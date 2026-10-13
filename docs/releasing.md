@@ -64,8 +64,9 @@ the Python 3.10/3.11/3.12 and authenticated Action checks on the final commit.
 4. Verify the release workflow and uploaded package before changing install
    examples or `DEFAULT_ACTION_REF` to the new published tag.
 
-Publishing a GitHub release triggers the PyPI publishing job. The `pypi`
-environment and PyPI trusted publisher must already be configured correctly;
+Publishing a GitHub release triggers the PyPI publishing job only when the
+repository variable `PUBLISH_TO_PYPI` is `true`. Set it after the `pypi`
+environment and PyPI trusted publisher are configured correctly;
 this checklist does not create credentials or grant access. A manual run of
 the Release workflow builds and checks artifacts without publishing to PyPI.
 

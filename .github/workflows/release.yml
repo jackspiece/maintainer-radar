@@ -57,7 +57,7 @@ jobs:
 
   publish:
     needs: build
-    if: github.event_name == 'release'
+    if: github.event_name == 'release' && vars.PUBLISH_TO_PYPI == 'true'
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
